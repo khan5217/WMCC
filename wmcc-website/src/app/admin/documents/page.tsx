@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { formatDate } from '@/lib/utils'
+import Link from 'next/link'
+import { Upload } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,7 +28,9 @@ export default async function AdminDocumentsPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold text-gray-900 font-serif">Documents</h1>
-        <div className="text-sm text-gray-500">{documents.length} documents</div>
+        <Link href="/admin/documents/new" className="btn-primary flex items-center gap-2 text-sm">
+          <Upload className="h-4 w-4" /> Upload Document
+        </Link>
       </div>
 
       <div className="card overflow-hidden">
