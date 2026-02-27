@@ -79,10 +79,10 @@ export function Navbar() {
       )}
     >
       {/* Top bar */}
-      <div className="bg-cricket-green text-white text-xs py-1.5 px-4">
+      <div className="bg-gray-900 text-cricket-gold text-xs py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <span>🏏 WMCC Milton Keynes Cricket Club — Est. 1985</span>
-          <span className="hidden sm:block">info@wmcc.co.uk | +44 7000 000000</span>
+          <span className="tracking-wide">WMCC Milton Keynes Cricket Club — Est. 1985</span>
+          <span className="hidden sm:block text-gray-400">info@wmcc.co.uk | +44 7000 000000</span>
         </div>
       </div>
 
@@ -91,12 +91,23 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-cricket-green rounded-full flex items-center justify-center text-white font-bold text-lg group-hover:bg-cricket-dark transition-colors">
+            <img
+              src="/images/logo.png"
+              alt="WMCC"
+              className="h-12 w-12 object-contain rounded-full"
+              onError={(e) => {
+                const t = e.currentTarget
+                t.style.display = 'none'
+                const fallback = t.nextElementSibling as HTMLElement
+                if (fallback) fallback.style.display = 'flex'
+              }}
+            />
+            <div className="hidden w-10 h-10 bg-cricket-green rounded-full items-center justify-center text-white font-bold text-lg group-hover:bg-cricket-dark transition-colors">
               W
             </div>
             <div className="hidden sm:block">
               <div className="font-bold text-gray-900 leading-tight">WMCC</div>
-              <div className="text-xs text-gray-500 leading-tight">Milton Keynes CC</div>
+              <div className="text-xs text-cricket-gold leading-tight font-medium">Milton Keynes CC</div>
             </div>
           </Link>
 

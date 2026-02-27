@@ -25,11 +25,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
-      <aside className="w-64 bg-gray-900 min-h-screen fixed top-0 left-0 z-40 pt-0">
+      <aside className="w-64 bg-gray-900 min-h-screen fixed top-0 left-0 z-40 pt-[90px] overflow-y-auto">
         {/* Sidebar header */}
-        <div className="bg-cricket-green p-5">
-          <div className="text-white font-bold text-lg">WMCC Admin</div>
-          <div className="text-green-200 text-xs">{user.firstName} {user.lastName}</div>
+        <div className="border-b border-cricket-gold/20 px-5 py-4">
+          <div className="text-cricket-gold font-bold text-base tracking-wide">WMCC Admin</div>
+          <div className="text-gray-500 text-xs mt-0.5">{user.firstName} {user.lastName}</div>
         </div>
 
         <nav className="py-4 px-3">
@@ -53,7 +53,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </aside>
 
       {/* Main content */}
-      <main className="ml-64 flex-1 min-h-screen">
+      <main className="ml-64 flex-1 min-h-screen pt-[90px]">
         {children}
       </main>
     </div>
