@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;600;700;900&display=swap');
+
+:root {
+  --font-inter: 'Inter', sans-serif;
+  --font-playfair: 'Playfair Display', serif;
+  --cricket-green: #006400;
+  --cricket-dark: #004d00;
+  --cricket-light: #228B22;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-inter);
+  color: #1a1a1a;
+  background-color: #ffffff;
+}
+
+/* Cricket-themed scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: var(--cricket-green); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--cricket-dark); }
+
+@layer components {
+  /* Buttons */
+  .btn-primary {
+    @apply bg-cricket-green text-white font-semibold py-3 px-6 rounded-lg
+           hover:bg-cricket-dark transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-cricket-green focus:ring-offset-2
+           shadow-green hover:shadow-lg;
+  }
+  .btn-secondary {
+    @apply bg-white text-cricket-green font-semibold py-3 px-6 rounded-lg border-2
+           border-cricket-green hover:bg-green-50 transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-cricket-green focus:ring-offset-2;
+  }
+  .btn-outline-white {
+    @apply border-2 border-white text-white font-semibold py-3 px-6 rounded-lg
+           hover:bg-white hover:text-cricket-green transition-all duration-200;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-white rounded-xl shadow-card hover:shadow-card-hover transition-shadow duration-300 overflow-hidden;
+  }
+  .card-green {
+    @apply bg-gradient-to-br from-cricket-green to-cricket-light text-white rounded-xl shadow-card;
+  }
+
+  /* Section */
+  .section-padding {
+    @apply py-16 px-4 sm:px-6 lg:px-8;
+  }
+  .container-max {
+    @apply max-w-7xl mx-auto;
+  }
+  .section-title {
+    @apply text-3xl md:text-4xl font-bold text-gray-900 font-serif;
+  }
+  .section-subtitle {
+    @apply text-lg text-gray-600 mt-3;
+  }
+
+  /* Badges */
+  .badge-win   { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800; }
+  .badge-loss  { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-800; }
+  .badge-draw  { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-yellow-100 text-yellow-800; }
+  .badge-role  { @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200; }
+
+  /* Form inputs */
+  .input {
+    @apply w-full px-4 py-3 rounded-lg border border-gray-300
+           focus:outline-none focus:ring-2 focus:ring-cricket-green focus:border-transparent
+           text-gray-900 placeholder-gray-400 bg-white transition-all duration-200;
+  }
+  .input-error {
+    @apply border-red-400 focus:ring-red-400;
+  }
+  .label {
+    @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+
+  /* Nav link */
+  .nav-link {
+    @apply text-gray-700 hover:text-cricket-green font-medium transition-colors duration-200
+           relative after:absolute after:bottom-0 after:left-0 after:w-0 after:h-0.5
+           after:bg-cricket-green after:transition-all after:duration-200 hover:after:w-full;
+  }
+  .nav-link-active {
+    @apply text-cricket-green after:w-full;
+  }
+
+  /* Hero */
+  .hero-gradient {
+    background: linear-gradient(135deg, #002200 0%, #004d00 40%, #006400 70%, #228B22 100%);
+  }
+
+  /* Stats */
+  .stat-card {
+    @apply text-center p-6 rounded-xl bg-white shadow-card;
+  }
+  .stat-value {
+    @apply text-3xl md:text-4xl font-bold text-cricket-green font-serif;
+  }
+  .stat-label {
+    @apply text-sm text-gray-500 uppercase tracking-wider mt-1;
+  }
+}

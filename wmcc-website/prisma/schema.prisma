@@ -1,0 +1,407 @@
+// WMCC Cricket Club - Prisma Schema
+// Database: PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ─────────────────────────────────────────────
+// USERS & AUTHENTICATION
+// ─────────────────────────────────────────────
+
+enum Role {
+  MEMBER
+  PLAYER
+  COMMITTEE
+  ADMIN
+}
+
+enum MembershipStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  SUSPENDED
+}
+
+enum MembershipTier {
+  PLAYING_SENIOR
+  PLAYING_JUNIOR
+  SOCIAL
+  FAMILY
+  LIFE
+}
+
+model User {
+  id               String           @id @default(cuid())
+  email            String           @unique
+  phone            String           @unique
+  passwordHash     String?
+  firstName        String
+  lastName         String
+  avatarUrl        String?
+  role             Role             @default(MEMBER)
+  membershipStatus MembershipStatus @default(PENDING)
+  membershipTier   MembershipTier?
+  membershipExpiry DateTime?
+  isVerified       Boolean          @default(false)
+  twoFactorEnabled Boolean          @default(true)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  // Relations
+  player           Player?
+  memberships      Membership[]
+  documents        Document[]       @relation("UploadedBy")
+  otpCodes         OtpCode[]
+  sessions         Session[]
+  newsArticles     NewsArticle[]    @relation("Author")
+  galleryItems     GalleryItem[]    @relation("UploadedBy")
+
+  @@index([email])
+  @@index([phone])
+}
+
+model OtpCode {
+  id        String   @id @default(cuid())
+  userId    String
+  phone     String
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([phone])
+  @@index([userId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────
+// MEMBERSHIP & PAYMENTS
+// ─────────────────────────────────────────────
+
+model Membership {
+  id              String           @id @default(cuid())
+  userId          String
+  tier            MembershipTier
+  season          Int              // e.g. 2024
+  amount          Int              // pence / cents
+  currency        String           @default("GBP")
+  stripeSessionId String?          @unique
+  stripePaymentId String?          @unique
+  paidAt          DateTime?
+  status          PaymentStatus    @default(PENDING)
+  createdAt       DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([season])
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+// ─────────────────────────────────────────────
+// TEAMS & PLAYERS
+// ─────────────────────────────────────────────
+
+enum TeamType {
+  FIRST_XI
+  SECOND_XI
+}
+
+model Team {
+  id          String   @id @default(cuid())
+  name        String
+  type        TeamType
+  description String?
+  captainId   String?
+  season      Int
+  createdAt   DateTime @default(now())
+
+  captain  Player?   @relation("TeamCaptain", fields: [captainId], references: [id])
+  players  Player[]  @relation("TeamPlayers")
+  matches  Match[]
+
+  @@unique([type, season])
+}
+
+enum PlayerRole {
+  BATSMAN
+  BOWLER
+  ALL_ROUNDER
+  WICKET_KEEPER
+  WICKET_KEEPER_BATSMAN
+}
+
+enum BattingStyle {
+  RIGHT_HAND
+  LEFT_HAND
+}
+
+enum BowlingStyle {
+  RIGHT_ARM_FAST
+  RIGHT_ARM_MEDIUM
+  RIGHT_ARM_SPIN_OFF
+  RIGHT_ARM_SPIN_LEG
+  LEFT_ARM_FAST
+  LEFT_ARM_MEDIUM
+  LEFT_ARM_SPIN
+  DOES_NOT_BOWL
+}
+
+model Player {
+  id            String       @id @default(cuid())
+  userId        String       @unique
+  jerseyNumber  Int?
+  role          PlayerRole   @default(ALL_ROUNDER)
+  battingStyle  BattingStyle @default(RIGHT_HAND)
+  bowlingStyle  BowlingStyle @default(DOES_NOT_BOWL)
+  bio           String?
+  dateOfBirth   DateTime?
+  nationality   String?
+  isActive      Boolean      @default(true)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teams         Team[]       @relation("TeamPlayers")
+  captainOf     Team[]       @relation("TeamCaptain")
+  performances  Performance[]
+
+  @@index([userId])
+}
+
+// ─────────────────────────────────────────────
+// MATCHES & SCORECARDS
+// ─────────────────────────────────────────────
+
+enum MatchResult {
+  WIN
+  LOSS
+  DRAW
+  TIE
+  NO_RESULT
+  ABANDONED
+}
+
+enum MatchFormat {
+  T20
+  ONE_DAY
+  TWO_DAY
+  FRIENDLY
+}
+
+model Match {
+  id              String      @id @default(cuid())
+  teamId          String
+  opposition      String
+  venue           String
+  isHome          Boolean     @default(true)
+  date            DateTime
+  format          MatchFormat @default(ONE_DAY)
+  result          MatchResult?
+  wmccScore       String?     // e.g. "187/6"
+  wmccOvers       Float?
+  oppositionScore String?
+  oppositionOvers Float?
+  description     String?     // match report summary
+  leagueName      String?     // e.g. "South Northants League"
+  isFeatured      Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  team         Team          @relation(fields: [teamId], references: [id])
+  performances Performance[]
+  galleryItems GalleryItem[]
+
+  @@index([teamId])
+  @@index([date])
+}
+
+model Performance {
+  id            String  @id @default(cuid())
+  matchId       String
+  playerId      String
+  // Batting
+  runs          Int?
+  ballsFaced    Int?
+  fours         Int?
+  sixes         Int?
+  isOut         Boolean @default(true)
+  dismissalType String? // e.g. "caught", "bowled", "lbw"
+  dismissedBy   String? // bowler name or "run out"
+  battingOrder  Int?
+  // Bowling
+  oversBowled   Float?
+  maidens       Int?
+  runsConceded  Int?
+  wickets       Int?
+  wides         Int?
+  noBalls       Int?
+  // Fielding
+  catches       Int     @default(0)
+  runOuts       Int     @default(0)
+  stumpings     Int     @default(0)
+  // MOTM
+  isManOfMatch  Boolean @default(false)
+
+  match  Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, playerId])
+  @@index([matchId])
+  @@index([playerId])
+}
+
+// ─────────────────────────────────────────────
+// NEWS & CONTENT
+// ─────────────────────────────────────────────
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+model NewsArticle {
+  id          String        @id @default(cuid())
+  title       String
+  slug        String        @unique
+  excerpt     String?
+  content     String        // HTML content from rich text editor
+  coverImage  String?
+  authorId    String
+  status      ArticleStatus @default(DRAFT)
+  isFeatured  Boolean       @default(false)
+  publishedAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  tags        String[]      @default([])
+
+  author User @relation("Author", fields: [authorId], references: [id])
+
+  @@index([slug])
+  @@index([status, publishedAt])
+}
+
+// ─────────────────────────────────────────────
+// GALLERY
+// ─────────────────────────────────────────────
+
+enum MediaType {
+  PHOTO
+  VIDEO
+}
+
+model GalleryItem {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  mediaType   MediaType @default(PHOTO)
+  url         String    // S3 URL
+  thumbnailUrl String?
+  matchId     String?
+  albumName   String?
+  uploadedById String
+  isFeatured  Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  match      Match? @relation(fields: [matchId], references: [id])
+  uploadedBy User   @relation("UploadedBy", fields: [uploadedById], references: [id])
+
+  @@index([matchId])
+  @@index([albumName])
+}
+
+// ─────────────────────────────────────────────
+// PRIVATE DOCUMENTS (Members only)
+// ─────────────────────────────────────────────
+
+enum DocumentAccess {
+  ALL_MEMBERS
+  PLAYING_MEMBERS
+  COMMITTEE
+  ADMIN
+}
+
+model Document {
+  id          String         @id @default(cuid())
+  title       String
+  description String?
+  fileUrl     String         // S3 URL
+  fileType    String         // MIME type
+  fileSize    Int            // bytes
+  category    String         // e.g. "Minutes", "Policies", "Financials"
+  access      DocumentAccess @default(ALL_MEMBERS)
+  uploadedById String
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  uploadedBy User @relation("UploadedBy", fields: [uploadedById], references: [id])
+
+  @@index([category])
+}
+
+// ─────────────────────────────────────────────
+// SPONSORS
+// ─────────────────────────────────────────────
+
+model Sponsor {
+  id        String   @id @default(cuid())
+  name      String
+  logoUrl   String?
+  website   String?
+  tier      String   @default("standard") // "gold", "silver", "standard"
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────
+// CONTACT MESSAGES
+// ─────────────────────────────────────────────
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────
+// SITE SETTINGS
+// ─────────────────────────────────────────────
+
+model SiteSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
