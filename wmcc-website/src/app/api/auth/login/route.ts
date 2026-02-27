@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { comparePassword } from '@/lib/auth'
+import { comparePassword, createSession } from '@/lib/auth'
 import { sendOTP } from '@/lib/twilio'
 import { z } from 'zod'
 
@@ -27,6 +27,31 @@ export async function POST(req: NextRequest) {
 
     if (user.membershipStatus === 'SUSPENDED') {
       return NextResponse.json({ error: 'Your account has been suspended. Contact the club.' }, { status: 403 })
+    }
+
+    // Skip OTP and create session directly if 2FA is disabled
+    if (!user.twoFactorEnabled) {
+      const token = await createSession(user.id)
+      const response = NextResponse.json({
+        success: true,
+        user: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+          role: user.role,
+          membershipStatus: user.membershipStatus,
+          avatarUrl: user.avatarUrl,
+        },
+      })
+      response.cookies.set('wmcc_session', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60,
+        path: '/',
+      })
+      return response
     }
 
     // Send OTP to member's registered mobile
