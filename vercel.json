@@ -1,0 +1,6 @@
+{
+  "buildCommand": "cd wmcc-website && npm run build",
+  "installCommand": "cd wmcc-website && npm install",
+  "outputDirectory": "wmcc-website/.next",
+  "framework": "nextjs"
+}
