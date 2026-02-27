@@ -59,7 +59,7 @@ export default async function AdminDashboard() {
             { href: '/admin/matches/new', label: 'Add Match', icon: Trophy },
             { href: '/admin/news/new', label: 'Write Article', icon: Newspaper },
             { href: '/admin/players/new', label: 'Add Player', icon: Users },
-            { href: '/admin/documents/upload', label: 'Upload Document', icon: FileText },
+            { href: '/admin/documents/new', label: 'Upload Document', icon: FileText },
           ].map(({ href, label, icon: Icon }) => (
             <Link
               key={href}
