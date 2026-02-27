@@ -14,7 +14,9 @@ export default async function AdminPlayersPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold text-gray-900 font-serif">Players</h1>
-        <div className="text-sm text-gray-500">{players.length} total players</div>
+        <Link href="/admin/players/new" className="btn-primary flex items-center gap-2 text-sm">
+          <Plus className="h-4 w-4" /> Add Player
+        </Link>
       </div>
 
       <div className="card overflow-hidden">

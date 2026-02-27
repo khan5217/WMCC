@@ -24,7 +24,9 @@ export default async function AdminMatchesPage() {
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold text-gray-900 font-serif">Matches</h1>
-        <div className="text-sm text-gray-500">{matches.length} total matches</div>
+        <Link href="/admin/matches/new" className="btn-primary flex items-center gap-2 text-sm">
+          <Plus className="h-4 w-4" /> Add Match
+        </Link>
       </div>
 
       <div className="card overflow-hidden">
