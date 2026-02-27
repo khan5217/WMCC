@@ -7,6 +7,8 @@ import { SponsorsSection } from '@/components/home/SponsorsSection'
 import { JoinCTA } from '@/components/home/JoinCTA'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic'
+
 async function getHomeData() {
   const [recentMatches, upcomingMatches, featuredNews, sponsors] = await Promise.all([
     prisma.match.findMany({

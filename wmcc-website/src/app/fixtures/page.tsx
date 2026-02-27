@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   description: 'WMCC Milton Keynes Cricket Club — full fixture list and match results for the 2024 season.',
 }
 
+export const dynamic = 'force-dynamic'
+
 const resultMap: Record<string, { label: string; cls: string }> = {
   WIN:       { label: 'Win',       cls: 'badge-win' },
   LOSS:      { label: 'Loss',      cls: 'badge-loss' },

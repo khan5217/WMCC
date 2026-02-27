@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   description: 'Meet the WMCC Milton Keynes Cricket Club squad — 1st XI and 2nd XI player profiles.',
 }
 
+export const dynamic = 'force-dynamic'
+
 const roleLabels: Record<string, string> = {
   BATSMAN: 'Batsman',
   BOWLER: 'Bowler',

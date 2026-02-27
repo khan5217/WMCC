@@ -10,6 +10,8 @@ export const metadata: Metadata = {
   description: 'Latest news, match reports, and announcements from WMCC Milton Keynes Cricket Club.',
 }
 
+export const dynamic = 'force-dynamic'
+
 export default async function NewsPage() {
   const articles = await prisma.newsArticle.findMany({
     where: { status: 'PUBLISHED' },
