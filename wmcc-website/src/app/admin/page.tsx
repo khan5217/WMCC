@@ -1,5 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
+
+export const dynamic = 'force-dynamic'
 import { Users, Trophy, Newspaper, Camera, FileText, Mail, TrendingUp, AlertCircle } from 'lucide-react'
 
 async function getAdminStats() {

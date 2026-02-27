@@ -9,6 +9,8 @@ export const metadata: Metadata = {
   description: 'Photos and videos from WMCC Milton Keynes Cricket Club matches and events.',
 }
 
+export const dynamic = 'force-dynamic'
+
 export default async function GalleryPage() {
   const items = await prisma.galleryItem.findMany({
     include: { match: { select: { opposition: true, date: true } } },
