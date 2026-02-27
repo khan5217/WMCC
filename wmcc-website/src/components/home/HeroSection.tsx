@@ -1,0 +1,120 @@
+'use client'
+
+import Link from 'next/link'
+import { formatDate } from '@/lib/utils'
+import { MapPin, Calendar, ChevronRight, Trophy } from 'lucide-react'
+import { motion } from 'framer-motion'
+
+interface Match {
+  id: string
+  opposition: string
+  venue: string
+  date: Date
+  isHome: boolean
+  team: { name: string }
+}
+
+export function HeroSection({ upcomingMatch }: { upcomingMatch?: Match }) {
+  return (
+    <section className="hero-gradient min-h-[85vh] flex items-center relative overflow-hidden pt-24">
+      {/* Cricket ball decoration */}
+      <div className="absolute -right-32 -top-32 w-96 h-96 rounded-full border-4 border-white/5 opacity-30" />
+      <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full border-4 border-white/10 opacity-30" />
+      <div className="absolute right-20 bottom-10 w-80 h-80 rounded-full border-4 border-white/5 opacity-20" />
+
+      {/* Pitch lines decoration */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/5" />
+        <div className="absolute top-1/2 left-0 right-0 h-px bg-white/5" />
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
+        <div className="max-w-3xl">
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm font-medium px-4 py-2 rounded-full mb-6"
+          >
+            <Trophy className="h-4 w-4 text-yellow-400" />
+            Est. 1985 — Proud Members of South Northants League
+          </motion.div>
+
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-5xl md:text-7xl font-bold text-white font-serif leading-tight mb-6"
+          >
+            Welcome to
+            <br />
+            <span className="text-green-300">WMCC</span>
+            <br />
+            Cricket Club
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-xl text-green-100 mb-10 max-w-xl leading-relaxed"
+          >
+            Milton Keynes&apos; premier cricket club. From grassroots to competitive league cricket —
+            everyone is welcome at WMCC.
+          </motion.p>
+
+          {/* CTA buttons */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="flex flex-wrap gap-4"
+          >
+            <Link href="/membership" className="btn-outline-white flex items-center gap-2 text-base">
+              Join the Club <ChevronRight className="h-4 w-4" />
+            </Link>
+            <Link href="/fixtures" className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 border border-white/20">
+              View Fixtures
+            </Link>
+          </motion.div>
+
+          {/* Next match card */}
+          {upcomingMatch && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="mt-12 inline-block bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-5"
+            >
+              <div className="text-xs text-green-300 font-semibold uppercase tracking-wider mb-2">
+                🏏 Next Match
+              </div>
+              <div className="text-white font-bold text-lg mb-2">
+                {upcomingMatch.team.name} vs {upcomingMatch.opposition}
+              </div>
+              <div className="flex flex-wrap gap-3 text-sm text-green-100">
+                <span className="flex items-center gap-1">
+                  <Calendar className="h-3.5 w-3.5" />
+                  {formatDate(upcomingMatch.date, 'EEE dd MMM yyyy')}
+                </span>
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-3.5 w-3.5" />
+                  {upcomingMatch.isHome ? '🏠' : '✈️'} {upcomingMatch.venue}
+                </span>
+              </div>
+            </motion.div>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom wave */}
+      <div className="absolute bottom-0 left-0 right-0">
+        <svg viewBox="0 0 1440 60" className="w-full text-white" fill="currentColor" preserveAspectRatio="none">
+          <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" />
+        </svg>
+      </div>
+    </section>
+  )
+}

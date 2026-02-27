@@ -1,0 +1,68 @@
+version: '3.8'
+
+# ─────────────────────────────────────────────────────────
+# WMCC Cricket Club — Local Development Stack
+# Run: docker compose up -d
+# ─────────────────────────────────────────────────────────
+
+services:
+  # PostgreSQL database
+  db:
+    image: postgres:16-alpine
+    container_name: wmcc_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: wmcc_db
+      POSTGRES_USER: wmcc_user
+      POSTGRES_PASSWORD: wmcc_dev_password
+    volumes:
+      - wmcc_pg_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U wmcc_user -d wmcc_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Next.js web application
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wmcc_web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgresql://wmcc_user:wmcc_dev_password@db:5432/wmcc_db
+      NODE_ENV: production
+    env_file:
+      - .env.local
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Nginx reverse proxy (with SSL in production)
+  nginx:
+    image: nginx:alpine
+    container_name: wmcc_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - wmcc_certbot_data:/var/www/certbot
+    depends_on:
+      - web
+
+volumes:
+  wmcc_pg_data:
+  wmcc_certbot_data:
