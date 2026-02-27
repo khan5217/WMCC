@@ -29,10 +29,17 @@ export default function MembersLoginPage() {
     setLoading(true)
     try {
       const res = await axios.post('/api/auth/login', { email, password })
-      setUserId(res.data.userId)
-      setMaskedPhone(res.data.maskedPhone)
-      setStep('otp')
-      toast.success(res.data.message)
+      if (res.data.success) {
+        // 2FA disabled — session created directly
+        toast.success('Welcome back!')
+        router.push('/members')
+        router.refresh()
+      } else {
+        setUserId(res.data.userId)
+        setMaskedPhone(res.data.maskedPhone)
+        setStep('otp')
+        toast.success(res.data.message)
+      }
     } catch (err: any) {
       toast.error(err.response?.data?.error ?? 'Login failed')
     } finally {
