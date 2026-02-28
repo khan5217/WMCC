@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { getSessionUser } from '@/lib/auth'
-import { Users, Trophy, Newspaper, Camera, FileText, Settings, LayoutDashboard, Mail, CreditCard } from 'lucide-react'
+import { Users, Trophy, Newspaper, Camera, FileText, Settings, LayoutDashboard, Mail, Star } from 'lucide-react'
 
 const NAV = [
   { href: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
@@ -11,6 +11,7 @@ const NAV = [
   { href: '/admin/gallery', icon: Camera, label: 'Gallery' },
   { href: '/admin/documents', icon: FileText, label: 'Documents' },
   { href: '/admin/members', icon: Users, label: 'Members' },
+  { href: '/admin/sponsors', icon: Star, label: 'Sponsors' },
   { href: '/admin/contacts', icon: Mail, label: 'Contact Messages' },
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ]

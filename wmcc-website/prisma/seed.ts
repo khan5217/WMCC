@@ -52,9 +52,7 @@ async function main() {
   await prisma.sponsor.createMany({
     skipDuplicates: true,
     data: [
-      { name: 'Milton Keynes Community Foundation', tier: 'gold', website: 'https://mkcf.org.uk' },
-      { name: 'Local Sports Store', tier: 'silver' },
-      { name: 'MK Business Hub', tier: 'standard' },
+      { name: 'Room Escape MK', tier: 'gold', website: 'https://roomescapemk.com' },
     ],
   })
 
