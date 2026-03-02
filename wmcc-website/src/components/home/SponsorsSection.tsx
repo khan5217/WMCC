@@ -6,8 +6,20 @@ interface Sponsor {
   tier: string
 }
 
+const MAIN_SPONSOR = {
+  id: 'room-escape-mk',
+  name: 'Room Escape MK',
+  logoUrl: 'https://zkbeifjlj6gi0c4b.public.blob.vercel-storage.com/Room%20Escape.jpg',
+  website: 'https://roomescapemk.com',
+  tier: 'gold',
+}
+
 export function SponsorsSection({ sponsors }: { sponsors: Sponsor[] }) {
-  const goldSponsors = sponsors.filter((s) => s.tier === 'gold')
+  // Always show Room Escape MK; merge with DB sponsors, avoiding duplicates by website
+  const dbGoldSponsors = sponsors.filter(
+    (s) => s.tier === 'gold' && s.website !== MAIN_SPONSOR.website
+  )
+  const goldSponsors = [MAIN_SPONSOR, ...dbGoldSponsors]
   const otherSponsors = sponsors.filter((s) => s.tier !== 'gold')
 
   return (

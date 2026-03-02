@@ -92,7 +92,7 @@ export function Navbar() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
             <img
-              src="/images/logo.png"
+              src="https://zkbeifjlj6gi0c4b.public.blob.vercel-storage.com/WMCC_Logo.jpg"
               alt="WMCC"
               className="h-12 w-12 object-contain rounded-full"
               onError={(e) => {

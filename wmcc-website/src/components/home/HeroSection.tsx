@@ -16,17 +16,18 @@ interface Match {
 
 export function HeroSection({ upcomingMatch }: { upcomingMatch?: Match }) {
   return (
-    <section className="hero-gradient min-h-[85vh] flex items-center relative overflow-hidden pt-24">
-      {/* Cricket ball decoration */}
-      <div className="absolute -right-32 -top-32 w-96 h-96 rounded-full border-4 border-white/5 opacity-30" />
-      <div className="absolute -right-16 -top-16 w-64 h-64 rounded-full border-4 border-white/10 opacity-30" />
-      <div className="absolute right-20 bottom-10 w-80 h-80 rounded-full border-4 border-white/5 opacity-20" />
-
-      {/* Pitch lines decoration */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/5" />
-        <div className="absolute top-1/2 left-0 right-0 h-px bg-white/5" />
-      </div>
+    <section
+      className="min-h-[85vh] flex items-center relative overflow-hidden pt-24"
+      style={{
+        backgroundImage: 'url(https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=2560&q=80)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center top',
+      }}
+    >
+      {/* Dark overlay — keeps text readable over the stadium image */}
+      <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/65 to-black/30" />
+      {/* Subtle gold vignette at bottom */}
+      <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/60 to-transparent" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
         <div className="max-w-3xl">
@@ -50,7 +51,7 @@ export function HeroSection({ upcomingMatch }: { upcomingMatch?: Match }) {
           >
             Welcome to
             <br />
-            <span className="text-green-300">WMCC</span>
+            <span className="text-cricket-gold">WMCC</span>
             <br />
             Cricket Club
           </motion.h1>
