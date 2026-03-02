@@ -25,12 +25,12 @@ export default function AboutPage() {
               <h2 className="section-title mb-4">Our History</h2>
               <div className="space-y-4 text-gray-600 leading-relaxed">
                 <p>
-                  WMCC Milton Keynes Cricket Club was founded in 1985 with a simple vision: to bring
+                  WMCC Milton Keynes Cricket Club was founded in 2020 with a simple vision: to bring
                   competitive and community cricket to Milton Keynes. What started as a handful of
                   passionate cricket lovers has grown into one of the most respected clubs in the region.
                 </p>
                 <p>
-                  Over nearly four decades, WMCC has nurtured hundreds of cricketers, from absolute beginners
+                  Since our founding, WMCC has nurtured cricketers of all ages and abilities, from absolute beginners
                   picking up a bat for the first time to seasoned players competing at league level. Our club
                   has always been built on the values of sportsmanship, inclusivity, and a love of the game.
                 </p>
@@ -45,7 +45,7 @@ export default function AboutPage() {
               {[
                 { icon: Trophy, label: 'League Winners', value: '8×' },
                 { icon: Users, label: 'Players Developed', value: '500+' },
-                { icon: Heart, label: 'Years of Cricket', value: '39+' },
+                { icon: Heart, label: 'Years of Cricket', value: '5+' },
                 { icon: Shield, label: 'Active Members', value: '120+' },
               ].map(({ icon: Icon, label, value }) => (
                 <div key={label} className="card p-6 text-center">
@@ -104,7 +104,7 @@ export default function AboutPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               { role: 'Chairman', name: 'TBA', contact: '' },
-              { role: 'Club Secretary', name: 'TBA', contact: 'secretary@wmcc.co.uk' },
+              { role: 'Club Secretary', name: 'TBA', contact: 'contact@wmccmk.com' },
               { role: '1st XI Captain', name: 'TBA', contact: '' },
               { role: '2nd XI Captain', name: 'TBA', contact: '' },
               { role: 'Treasurer', name: 'TBA', contact: '' },
@@ -150,7 +150,7 @@ export default function AboutPage() {
                 </li>
                 <li className="flex items-center gap-3">
                   <Mail className="h-5 w-5 text-cricket-green" />
-                  <a href="mailto:info@wmcc.co.uk" className="text-gray-600 hover:text-cricket-green">info@wmcc.co.uk</a>
+                  <a href="mailto:contact@wmccmk.com" className="text-gray-600 hover:text-cricket-green">contact@wmccmk.com</a>
                 </li>
                 <li className="flex items-center gap-3">
                   <Phone className="h-5 w-5 text-cricket-green" />

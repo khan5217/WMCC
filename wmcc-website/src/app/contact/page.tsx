@@ -57,8 +57,8 @@ export default function ContactPage() {
                 {
                   icon: Mail,
                   title: 'Email',
-                  lines: ['info@wmcc.co.uk', 'secretary@wmcc.co.uk'],
-                  href: 'mailto:info@wmcc.co.uk',
+                  lines: ['contact@wmccmk.com', 'contact@wmccmk.com'],
+                  href: 'mailto:contact@wmccmk.com',
                 },
                 {
                   icon: Clock,

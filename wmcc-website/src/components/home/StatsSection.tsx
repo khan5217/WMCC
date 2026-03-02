@@ -8,7 +8,7 @@ export function StatsSection({ playerCount, matchCount, winCount }: Props) {
   const winPct = matchCount > 0 ? Math.round((winCount / matchCount) * 100) : 0
 
   const stats = [
-    { value: '1985', label: 'Year Founded' },
+    { value: '2020', label: 'Year Founded' },
     { value: playerCount.toString(), label: 'Active Players' },
     { value: matchCount.toString(), label: 'Matches Played' },
     { value: `${winPct}%`, label: 'Win Rate' },

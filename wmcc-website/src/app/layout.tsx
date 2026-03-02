@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     default: 'WMCC Milton Keynes Cricket Club',
     template: '%s | WMCC Cricket Club',
   },
-  description: 'Official website of WMCC Milton Keynes Cricket Club — est. 1985. Home of competitive and community cricket in Milton Keynes.',
+  description: 'Official website of WMCC Milton Keynes Cricket Club — est. 2020. Home of competitive and community cricket in Milton Keynes.',
   keywords: ['WMCC', 'cricket', 'Milton Keynes', 'cricket club', 'MK cricket'],
   openGraph: {
     type: 'website',

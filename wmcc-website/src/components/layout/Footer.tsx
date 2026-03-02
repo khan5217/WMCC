@@ -10,16 +10,18 @@ export function Footer() {
           {/* Club info */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-cricket-green rounded-full flex items-center justify-center text-white font-bold text-lg">
-                W
-              </div>
+              <img
+                src="https://zkbeifjlj6gi0c4b.public.blob.vercel-storage.com/WMCC_Logo.jpg"
+                alt="WMCC"
+                className="w-10 h-10 object-contain rounded-full"
+              />
               <div>
                 <div className="font-bold text-white text-lg">WMCC</div>
                 <div className="text-xs text-gray-400">Milton Keynes CC</div>
               </div>
             </div>
             <p className="text-sm text-gray-400 leading-relaxed">
-              WMCC Milton Keynes Cricket Club — a proud community cricket club established in 1985,
+              WMCC Milton Keynes Cricket Club — a proud community cricket club established in 2020,
               nurturing talent and celebrating the sport in Milton Keynes.
             </p>
             <div className="flex gap-3 mt-5">
@@ -112,8 +114,8 @@ export function Footer() {
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="h-4 w-4 text-cricket-green shrink-0" />
-                <a href="mailto:info@wmcc.co.uk" className="text-sm text-gray-400 hover:text-cricket-light transition-colors">
-                  info@wmcc.co.uk
+                <a href="mailto:contact@wmccmk.com" className="text-sm text-gray-400 hover:text-cricket-light transition-colors">
+                  contact@wmccmk.com
                 </a>
               </li>
             </ul>
