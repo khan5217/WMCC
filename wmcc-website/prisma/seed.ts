@@ -52,7 +52,7 @@ async function main() {
   await prisma.sponsor.createMany({
     skipDuplicates: true,
     data: [
-      { name: 'Room Escape MK', tier: 'gold', website: 'https://roomescapemk.com' },
+      { name: 'Room Escape MK', tier: 'gold', website: 'https://roomescapemk.com', logoUrl: 'https://zkbeifjlj6gi0c4b.public.blob.vercel-storage.com/Room%20Escape.jpg' },
     ],
   })
 
