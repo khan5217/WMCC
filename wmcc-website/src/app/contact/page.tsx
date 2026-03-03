@@ -46,7 +46,8 @@ export default function ContactPage() {
                 {
                   icon: MapPin,
                   title: 'Club Ground',
-                  lines: ['WMCC Cricket Ground', 'Milton Keynes, MK1 1AA'],
+                  lines: ['Crownhill Cricket Ground', '6 Marley Grove', 'Milton Keynes, MK8 0AT'],
+                  href: 'https://maps.google.com/?q=Crownhill+Cricket+Ground,+6+Marley+Grove,+Milton+Keynes,+MK8+0AT',
                 },
                 {
                   icon: Phone,
@@ -57,8 +58,8 @@ export default function ContactPage() {
                 {
                   icon: Mail,
                   title: 'Email',
-                  lines: ['info@wmcc.co.uk', 'secretary@wmcc.co.uk'],
-                  href: 'mailto:info@wmcc.co.uk',
+                  lines: ['contact@wmccmk.com', 'contact@wmccmk.com'],
+                  href: 'mailto:contact@wmccmk.com',
                 },
                 {
                   icon: Clock,

@@ -81,8 +81,8 @@ export function Navbar() {
       {/* Top bar */}
       <div className="bg-gray-900 text-cricket-gold text-xs py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <span className="tracking-wide">WMCC Milton Keynes Cricket Club — Est. 1985</span>
-          <span className="hidden sm:block text-gray-400">info@wmcc.co.uk | +44 7000 000000</span>
+          <span className="tracking-wide">WMCC Milton Keynes Cricket Club — Est. 2020</span>
+          <span className="hidden sm:block text-gray-400">contact@wmccmk.com | +44 7000 000000</span>
         </div>
       </div>
 
