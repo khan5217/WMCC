@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
+import DeleteButton from '@/components/admin/DeleteButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,6 +32,7 @@ export default async function AdminPlayersPage() {
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Bowling</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Jersey</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Status</th>
+                <th className="px-5 py-3.5"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -49,11 +51,22 @@ export default async function AdminPlayersPage() {
                       {player.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </td>
+                  <td className="px-5 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <Link href={`/admin/players/${player.id}/edit`} className="text-xs text-cricket-green hover:underline font-medium whitespace-nowrap">
+                        Edit →
+                      </Link>
+                      <DeleteButton
+                        endpoint={`/api/players/${player.id}`}
+                        label={`${player.user.firstName} ${player.user.lastName}`}
+                      />
+                    </div>
+                  </td>
                 </tr>
               ))}
               {players.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-5 py-10 text-center text-gray-400">No players found.</td>
+                  <td colSpan={8} className="px-5 py-10 text-center text-gray-400">No players found.</td>
                 </tr>
               )}
             </tbody>

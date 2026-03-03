@@ -82,21 +82,40 @@ async function main() {
     })
   }
 
-  // Sample news article
+  // 2026 Season announcement article
   await prisma.newsArticle.upsert({
-    where: { slug: 'welcome-to-wmcc-2024-season' },
+    where: { slug: '2026-season-announcement' },
     update: {},
     create: {
-      title: 'Welcome to the 2024 Cricket Season!',
-      slug: 'welcome-to-wmcc-2024-season',
-      excerpt: 'We are thrilled to welcome all members and supporters to the 2024 cricket season at WMCC Milton Keynes.',
-      content: '<p>We are thrilled to welcome all members and supporters to the 2024 cricket season at WMCC Milton Keynes. This year promises to be our most exciting yet with new players joining our squad and ambitious targets for both teams.</p><p>Pre-season nets are available every Tuesday and Thursday from 6:30pm. All are welcome!</p>',
+      title: '2026 Season Is Almost Here — Let\'s Make It Our Best Yet!',
+      slug: '2026-season-announcement',
+      excerpt: 'The 2026 cricket season is just around the corner. Pre-season nets are back, new signings are arriving, and membership is now open.',
+      content: `<h2>The 2026 Season Is Coming!</h2>
+<p>We are delighted to announce that the 2026 season at Wolverton Men's Cricket Club (WMCC) is almost upon us! After an outstanding 2025 campaign, we are gearing up for what promises to be our most exciting season yet.</p>
+<h3>Pre-Season Nets</h3>
+<p>Pre-season nets are back at Crownhill Cricket Ground. All members are encouraged to attend:</p>
+<ul>
+  <li><strong>When:</strong> Every Tuesday and Thursday from 6:30pm</li>
+  <li><strong>Venue:</strong> Crownhill Cricket Ground, 6 Marley Grove, Milton Keynes, MK8 0AT</li>
+  <li><strong>Starting:</strong> April 2026</li>
+</ul>
+<h3>Register for 2026</h3>
+<p>Membership for the 2026 season is now open. We offer two simple options:</p>
+<ul>
+  <li><strong>Annual Playing Membership</strong> — £40 one-off payment, full playing rights for the season</li>
+  <li><strong>Monthly Supporter</strong> — just £5/month by card or Direct Debit, cancel anytime</li>
+</ul>
+<p><a href="/membership">Register on our membership page</a> to secure your place for 2026.</p>
+<h3>New Signings</h3>
+<p>We are delighted to welcome several exciting new players to the squad this season. A full squad announcement will follow shortly.</p>
+<p>If you would like to trial for WMCC or know someone who would, please contact us at <a href="mailto:contact@wmccmk.com">contact@wmccmk.com</a>.</p>
+<p><em>Here's to a fantastic 2026 season — see you on the pitch!</em></p>`,
       coverImage: null,
       authorId: admin.id,
       status: ArticleStatus.PUBLISHED,
       isFeatured: true,
-      publishedAt: new Date('2024-04-01'),
-      tags: ['season', 'welcome', '2024'],
+      publishedAt: new Date('2026-03-03'),
+      tags: ['2026', 'season', 'announcement', 'membership'],
     },
   })
 

@@ -11,6 +11,11 @@ interface Match {
   date: Date
   isHome: boolean
   team: { name: string }
+  topScorer: string | null
+  topScorerRuns: number | null
+  topBowler: string | null
+  topBowlerWickets: number | null
+  cricheroesUrl: string | null
 }
 
 function ResultBadge({ result }: { result: string | null }) {
@@ -52,23 +57,38 @@ export function LatestResults({ matches }: { matches: Match[] }) {
         ) : (
           <div className="space-y-3">
             {matches.map((match) => (
-              <Link
-                key={match.id}
-                href={`/scorecards/${match.id}`}
-                className="card flex items-center gap-4 p-4 hover:border-l-4 hover:border-cricket-green transition-all"
-              >
-                <ResultBadge result={match.result} />
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-gray-900 text-sm truncate">
-                    {match.isHome ? 'vs' : '@'} {match.opposition}
+              <div key={match.id} className="card p-4 hover:border-l-4 hover:border-cricket-green transition-all">
+                <div className="flex items-center gap-4">
+                  <ResultBadge result={match.result} />
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-gray-900 text-sm truncate">
+                      {match.isHome ? 'vs' : '@'} {match.opposition}
+                    </div>
+                    <div className="text-xs text-gray-500">{match.team.name} • {formatDate(match.date)}</div>
                   </div>
-                  <div className="text-xs text-gray-500">{match.team.name} • {formatDate(match.date)}</div>
+                  <div className="text-right text-sm flex-shrink-0">
+                    <div className="font-semibold text-gray-900">{match.wmccScore ?? '—'}</div>
+                    <div className="text-gray-400 text-xs">{match.oppositionScore ?? '—'}</div>
+                  </div>
                 </div>
-                <div className="text-right text-sm flex-shrink-0">
-                  <div className="font-semibold text-gray-900">{match.wmccScore ?? '—'}</div>
-                  <div className="text-gray-400 text-xs">{match.oppositionScore ?? '—'}</div>
-                </div>
-              </Link>
+                {(match.topScorer || match.topBowler || match.cricheroesUrl) && (
+                  <div className="mt-2 pt-2 border-t border-gray-100 flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center gap-3 text-xs text-gray-500">
+                      {match.topScorer && (
+                        <span>🏏 <span className="font-medium text-gray-700">{match.topScorer}</span> {match.topScorerRuns !== null ? `${match.topScorerRuns} runs` : ''}</span>
+                      )}
+                      {match.topBowler && (
+                        <span>⚾ <span className="font-medium text-gray-700">{match.topBowler}</span> {match.topBowlerWickets !== null ? `${match.topBowlerWickets} wkts` : ''}</span>
+                      )}
+                    </div>
+                    {match.cricheroesUrl && (
+                      <a href={match.cricheroesUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-cricket-green hover:underline font-medium flex-shrink-0">
+                        Full scorecard →
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
         )}

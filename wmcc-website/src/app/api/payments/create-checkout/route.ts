@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { stripe, MEMBERSHIP_PRICES } from '@/lib/stripe'
+import { stripe, MEMBERSHIP_PRODUCTS } from '@/lib/stripe'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 
 const schema = z.object({
   email: z.string().email(),
-  membershipTier: z.enum(['PLAYING_SENIOR', 'PLAYING_JUNIOR', 'SOCIAL', 'FAMILY', 'LIFE']),
+  membershipTier: z.enum(['PLAYING_SENIOR', 'SOCIAL']),
 })
 
 export async function POST(req: NextRequest) {
@@ -18,24 +18,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const price = MEMBERSHIP_PRICES[membershipTier]
+    const product = MEMBERSHIP_PRODUCTS[membershipTier]
     const season = new Date().getFullYear()
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL!
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [{
-        price_data: {
-          currency: 'gbp',
-          product_data: {
-            name: `WMCC ${price.label} — ${season} Season`,
-            description: price.description,
-          },
-          unit_amount: price.amount,
+    const lineItem: any = {
+      price_data: {
+        currency: 'gbp',
+        product_data: {
+          name: `WMCC ${product.label} — ${season}`,
+          description: product.description,
         },
-        quantity: 1,
-      }],
-      mode: 'payment',
+        unit_amount: product.amount,
+        ...(product.mode === 'subscription' ? { recurring: { interval: product.interval } } : {}),
+      },
+      quantity: 1,
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: product.paymentMethods as any,
+      line_items: [lineItem],
+      mode: product.mode,
       customer_email: email,
       success_url: `${baseUrl}/membership/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/membership`,
@@ -50,9 +53,9 @@ export async function POST(req: NextRequest) {
     await prisma.membership.create({
       data: {
         userId: user.id,
-        tier: membershipTier,
+        tier: membershipTier as any,
         season,
-        amount: price.amount,
+        amount: product.amount,
         currency: 'GBP',
         stripeSessionId: session.id,
         status: 'PENDING',
