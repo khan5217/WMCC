@@ -102,8 +102,9 @@ export function Footer() {
               <li className="flex items-start gap-3">
                 <MapPin className="h-4 w-4 text-cricket-green mt-0.5 shrink-0" />
                 <span className="text-sm text-gray-400">
-                  WMCC Cricket Ground<br />
-                  Milton Keynes, MK1 1AA
+                  Crownhill Cricket Ground<br />
+                  6 Marley Grove<br />
+                  Milton Keynes, MK8 0AT
                 </span>
               </li>
               <li className="flex items-center gap-3">

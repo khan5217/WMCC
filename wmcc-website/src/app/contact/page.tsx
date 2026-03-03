@@ -46,7 +46,8 @@ export default function ContactPage() {
                 {
                   icon: MapPin,
                   title: 'Club Ground',
-                  lines: ['WMCC Cricket Ground', 'Milton Keynes, MK1 1AA'],
+                  lines: ['Crownhill Cricket Ground', '6 Marley Grove', 'Milton Keynes, MK8 0AT'],
+                  href: 'https://maps.google.com/?q=Crownhill+Cricket+Ground,+6+Marley+Grove,+Milton+Keynes,+MK8+0AT',
                 },
                 {
                   icon: Phone,

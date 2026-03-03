@@ -144,8 +144,8 @@ export default function AboutPage() {
                 <li className="flex items-start gap-3">
                   <MapPin className="h-5 w-5 text-cricket-green mt-0.5" />
                   <div>
-                    <div className="font-semibold text-gray-900">WMCC Cricket Ground</div>
-                    <div className="text-gray-500 text-sm">Milton Keynes, MK1 1AA</div>
+                    <div className="font-semibold text-gray-900">Crownhill Cricket Ground</div>
+                    <div className="text-gray-500 text-sm">6 Marley Grove, Milton Keynes, MK8 0AT</div>
                   </div>
                 </li>
                 <li className="flex items-center gap-3">
@@ -158,13 +158,18 @@ export default function AboutPage() {
                 </li>
               </ul>
             </div>
-            {/* Map placeholder */}
-            <div className="h-64 bg-green-50 rounded-xl border-2 border-dashed border-green-200 flex items-center justify-center">
-              <div className="text-center text-gray-400">
-                <MapPin className="h-10 w-10 mx-auto mb-2" />
-                <div className="font-medium">Google Maps</div>
-                <div className="text-sm">Embedded map will appear here</div>
-              </div>
+            {/* Google Maps embed */}
+            <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm h-64">
+              <iframe
+                title="Crownhill Cricket Ground"
+                src="https://maps.google.com/maps?q=Crownhill+Cricket+Ground,+6+Marley+Grove,+Milton+Keynes,+MK8+0AT&output=embed"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+              />
             </div>
           </div>
         </div>

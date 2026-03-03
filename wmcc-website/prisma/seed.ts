@@ -60,8 +60,8 @@ async function main() {
   const settings = [
     { key: 'site_name', value: 'WMCC Milton Keynes Cricket Club' },
     { key: 'founded_year', value: '2020' },
-    { key: 'ground_name', value: 'WMCC Cricket Ground, Milton Keynes' },
-    { key: 'ground_address', value: 'Milton Keynes, MK1 1AA' },
+    { key: 'ground_name', value: 'Crownhill Cricket Ground' },
+    { key: 'ground_address', value: '6 Marley Grove, Milton Keynes, MK8 0AT' },
     { key: 'contact_email', value: 'contact@wmccmk.com' },
     { key: 'contact_phone', value: '+44 7000 000000' },
     { key: 'facebook_url', value: '' },
