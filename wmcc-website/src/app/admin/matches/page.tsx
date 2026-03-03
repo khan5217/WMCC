@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import { Plus, Radio } from 'lucide-react'
+import DeleteButton from '@/components/admin/DeleteButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -79,6 +80,7 @@ export default async function AdminMatchesPage() {
                       <Link href={`/admin/matches/${match.id}/edit`} className="text-xs text-cricket-green hover:underline font-medium">
                         Edit →
                       </Link>
+                      <DeleteButton endpoint={`/api/matches/${match.id}`} label={match.opposition} />
                     </div>
                   </td>
                 </tr>

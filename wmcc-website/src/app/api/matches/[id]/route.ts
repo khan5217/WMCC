@@ -34,3 +34,16 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     return NextResponse.json(match)
   }, 'COMMITTEE')
 }
+
+export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+  return withAuth(_req, async () => {
+    const match = await prisma.match.findUnique({ where: { id: params.id } })
+    if (!match) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+    // Unlink gallery items before deletion (matchId is nullable)
+    await prisma.galleryItem.updateMany({ where: { matchId: params.id }, data: { matchId: null } })
+    await prisma.match.delete({ where: { id: params.id } })
+
+    return NextResponse.json({ success: true })
+  }, 'COMMITTEE')
+}

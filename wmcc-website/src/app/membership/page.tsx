@@ -2,72 +2,45 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { Check, Shield, Users, Trophy, Star } from 'lucide-react'
+import { Check, Trophy, Heart, CreditCard, RefreshCw } from 'lucide-react'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
-const TIERS = [
+const PLANS = [
   {
     id: 'PLAYING_SENIOR',
-    name: 'Senior Playing',
-    price: '£80',
-    description: 'Full playing membership for adults (18+)',
+    name: 'Annual Playing Membership',
+    price: '£40',
+    billing: 'one-off payment',
+    icon: Trophy,
+    color: 'border-cricket-green',
+    recommended: true,
+    paymentNote: 'Pay once by card',
     features: [
       'Play in 1st & 2nd XI',
-      'Access to all nets sessions',
+      'All pre-season & mid-season nets',
       'Voting rights at AGM',
       'Members login & documents',
       'Club kit discount',
+      'Full 2026 season coverage',
     ],
-    icon: Trophy,
-    recommended: true,
-    color: 'border-cricket-green',
-  },
-  {
-    id: 'PLAYING_JUNIOR',
-    name: 'Junior Playing',
-    price: '£40',
-    description: 'Playing membership for cricketers under 18',
-    features: [
-      'Junior team participation',
-      'Junior nets sessions',
-      'ECB coaching programs',
-      'Members login & documents',
-    ],
-    icon: Star,
-    recommended: false,
-    color: 'border-blue-400',
   },
   {
     id: 'SOCIAL',
-    name: 'Social Member',
-    price: '£25',
-    description: 'Support the club without playing',
+    name: 'Monthly Supporter',
+    price: '£5',
+    billing: 'per month — cancel anytime',
+    icon: Heart,
+    color: 'border-blue-400',
+    recommended: false,
+    paymentNote: 'Card or Direct Debit',
     features: [
       'Attend all home matches',
       'Club events & socials',
-      'Members login & documents',
-      'Newsletter updates',
+      'Members login & updates',
+      'Newsletter & match reports',
+      'No long-term commitment',
     ],
-    icon: Users,
-    recommended: false,
-    color: 'border-gray-300',
-  },
-  {
-    id: 'FAMILY',
-    name: 'Family',
-    price: '£150',
-    description: 'Membership for the whole family (up to 4)',
-    features: [
-      'Up to 4 family members',
-      'Playing + social benefits',
-      'Junior programs included',
-      'Members login & documents',
-      'Family events access',
-    ],
-    icon: Shield,
-    recommended: false,
-    color: 'border-purple-400',
   },
 ]
 
@@ -96,7 +69,6 @@ export default function MembershipPage() {
         membershipTier: selected,
       })
 
-      // Redirect to Stripe checkout
       const res = await axios.post('/api/payments/create-checkout', {
         email: form.email,
         membershipTier: selected,
@@ -109,14 +81,15 @@ export default function MembershipPage() {
     }
   }
 
+  const selectedPlan = PLANS.find((p) => p.id === selected)!
+
   return (
     <>
       <div className="hero-gradient pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-white font-serif mb-3">Join WMCC</h1>
           <p className="text-xl text-green-100 max-w-2xl mx-auto">
-            Become a member of Milton Keynes&apos; premier cricket club.
-            Choose the membership that&apos;s right for you.
+            Become a member of Milton Keynes&apos; premier cricket club for the 2026 season.
           </p>
         </div>
       </div>
@@ -127,43 +100,51 @@ export default function MembershipPage() {
             <>
               <div className="text-center mb-12">
                 <h2 className="section-title">Choose Your Membership</h2>
-                <p className="section-subtitle">2024 Season memberships — includes full club benefits</p>
+                <p className="section-subtitle">Two simple options — pick what works for you</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-                {TIERS.map((tier) => {
-                  const Icon = tier.icon
-                  const isSelected = selected === tier.id
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto mb-10">
+                {PLANS.map((plan) => {
+                  const Icon = plan.icon
+                  const isSelected = selected === plan.id
                   return (
                     <div
-                      key={tier.id}
-                      onClick={() => setSelected(tier.id)}
-                      className={`card p-6 cursor-pointer border-2 transition-all relative
-                        ${isSelected ? `${tier.color} shadow-lg` : 'border-gray-100 hover:border-gray-300'}
+                      key={plan.id}
+                      onClick={() => setSelected(plan.id)}
+                      className={`card p-8 cursor-pointer border-2 transition-all relative
+                        ${isSelected ? `${plan.color} shadow-xl` : 'border-gray-100 hover:border-gray-300'}
                       `}
                     >
-                      {tier.recommended && (
+                      {plan.recommended && (
                         <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-cricket-green text-white text-xs font-bold px-3 py-1 rounded-full">
                           Most Popular
                         </div>
                       )}
-                      <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-4 ${isSelected ? 'bg-cricket-green' : 'bg-gray-100'}`}>
-                        <Icon className={`h-5 w-5 ${isSelected ? 'text-white' : 'text-gray-500'}`} />
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 ${isSelected ? 'bg-cricket-green' : 'bg-gray-100'}`}>
+                        <Icon className={`h-6 w-6 ${isSelected ? 'text-white' : 'text-gray-500'}`} />
                       </div>
-                      <h3 className="font-bold text-gray-900 mb-1">{tier.name}</h3>
-                      <div className="text-3xl font-bold text-cricket-green mb-1">{tier.price}</div>
-                      <div className="text-xs text-gray-400 mb-4">per season</div>
-                      <p className="text-sm text-gray-500 mb-4">{tier.description}</p>
-                      <ul className="space-y-2">
-                        {tier.features.map((f) => (
-                          <li key={f} className="flex items-start gap-2 text-sm text-gray-600">
-                            <Check className="h-4 w-4 text-cricket-green mt-0.5 flex-shrink-0" />
+                      <h3 className="font-bold text-gray-900 text-lg mb-1">{plan.name}</h3>
+                      <div className="flex items-baseline gap-1.5 mb-1">
+                        <span className="text-4xl font-bold text-cricket-green">{plan.price}</span>
+                      </div>
+                      <p className="text-sm text-gray-400 mb-5">{plan.billing}</p>
+
+                      <div className={`text-xs font-medium px-3 py-1.5 rounded-full inline-flex items-center gap-1.5 mb-6
+                        ${plan.id === 'SOCIAL' ? 'bg-blue-50 text-blue-700' : 'bg-green-50 text-cricket-green'}`}>
+                        {plan.id === 'SOCIAL' ? <RefreshCw className="h-3 w-3" /> : <CreditCard className="h-3 w-3" />}
+                        {plan.paymentNote}
+                      </div>
+
+                      <ul className="space-y-2.5">
+                        {plan.features.map((f) => (
+                          <li key={f} className="flex items-start gap-2.5 text-sm text-gray-600">
+                            <Check className="h-4 w-4 text-cricket-green mt-0.5 shrink-0" />
                             {f}
                           </li>
                         ))}
                       </ul>
                       {isSelected && (
-                        <div className="mt-4 text-center text-xs text-cricket-green font-semibold">
+                        <div className="mt-5 text-center text-sm text-cricket-green font-semibold">
                           ✓ Selected
                         </div>
                       )}
@@ -174,7 +155,7 @@ export default function MembershipPage() {
 
               <div className="text-center">
                 <button onClick={() => setStep('register')} className="btn-primary text-lg px-10 py-4">
-                  Continue with {TIERS.find((t) => t.id === selected)?.name} →
+                  Continue with {selectedPlan.name} →
                 </button>
                 <p className="text-sm text-gray-400 mt-3">
                   Secure payment via Stripe. Already a member?{' '}
@@ -185,17 +166,15 @@ export default function MembershipPage() {
           ) : (
             <div className="max-w-lg mx-auto">
               <button onClick={() => setStep('choose')} className="text-sm text-gray-400 hover:text-gray-600 mb-6">
-                ← Change membership tier
+                ← Change membership
               </button>
 
               <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-8 flex items-center justify-between">
                 <div>
-                  <div className="font-bold text-gray-900">{TIERS.find((t) => t.id === selected)?.name}</div>
-                  <div className="text-sm text-gray-500">2024 Season</div>
+                  <div className="font-bold text-gray-900">{selectedPlan.name}</div>
+                  <div className="text-sm text-gray-500">{selectedPlan.billing}</div>
                 </div>
-                <div className="text-2xl font-bold text-cricket-green">
-                  {TIERS.find((t) => t.id === selected)?.price}
-                </div>
+                <div className="text-2xl font-bold text-cricket-green">{selectedPlan.price}</div>
               </div>
 
               <div className="card p-8">
@@ -234,7 +213,13 @@ export default function MembershipPage() {
                     <input className="input" type="password" required value={form.confirmPassword}
                       onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })} placeholder="Repeat password" />
                   </div>
-                  <button type="submit" disabled={loading} className="btn-primary w-full text-base py-3.5 flex items-center justify-center gap-2">
+                  {selected === 'SOCIAL' && (
+                    <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-blue-700">
+                      Monthly subscription — you will be taken to Stripe where you can pay by <strong>card or Direct Debit</strong>.
+                      Cancel anytime from your Stripe account or by contacting us.
+                    </div>
+                  )}
+                  <button type="submit" disabled={loading} className="btn-primary w-full text-base py-3.5">
                     {loading ? 'Processing...' : 'Proceed to Payment →'}
                   </button>
                   <p className="text-xs text-gray-400 text-center">

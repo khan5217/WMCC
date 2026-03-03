@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
+import DeleteButton from '@/components/admin/DeleteButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -51,9 +52,15 @@ export default async function AdminPlayersPage() {
                     </span>
                   </td>
                   <td className="px-5 py-3.5">
-                    <Link href={`/admin/players/${player.id}/edit`} className="text-xs text-cricket-green hover:underline font-medium whitespace-nowrap">
-                      Edit →
-                    </Link>
+                    <div className="flex items-center gap-3">
+                      <Link href={`/admin/players/${player.id}/edit`} className="text-xs text-cricket-green hover:underline font-medium whitespace-nowrap">
+                        Edit →
+                      </Link>
+                      <DeleteButton
+                        endpoint={`/api/players/${player.id}`}
+                        label={`${player.user.firstName} ${player.user.lastName}`}
+                      />
+                    </div>
                   </td>
                 </tr>
               ))}
