@@ -1,29 +1,26 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
-type User = { id: string; firstName: string; lastName: string; email: string }
-
-export default function NewPlayerPage() {
+export default function EditPlayerPage() {
   const router = useRouter()
-  const [users, setUsers] = useState<User[]>([])
+  const params = useParams()
+  const id = params.id as string
   const [loading, setLoading] = useState(false)
-  const [linkToMember, setLinkToMember] = useState(true)
+  const [fetching, setFetching] = useState(true)
+  const [playerName, setPlayerName] = useState('')
   const [form, setForm] = useState({
-    userId: '',
-    firstName: '',
-    lastName: '',
     jerseyNumber: '',
     role: 'ALL_ROUNDER',
     battingStyle: 'RIGHT_HAND',
     bowlingStyle: 'DOES_NOT_BOWL',
     bio: '',
-    dateOfBirth: '',
     nationality: '',
+    isActive: true,
     totalMatches: '',
     totalRuns: '',
     highestScore: '',
@@ -37,23 +34,48 @@ export default function NewPlayerPage() {
   })
 
   useEffect(() => {
-    axios.get('/api/players').then((res) => setUsers(res.data))
-  }, [])
+    axios.get(`/api/players/${id}`)
+      .then((res) => {
+        const p = res.data
+        setPlayerName(`${p.user.firstName} ${p.user.lastName}`)
+        setForm({
+          jerseyNumber: p.jerseyNumber?.toString() ?? '',
+          role: p.role,
+          battingStyle: p.battingStyle,
+          bowlingStyle: p.bowlingStyle,
+          bio: p.bio ?? '',
+          nationality: p.nationality ?? '',
+          isActive: p.isActive,
+          totalMatches: p.totalMatches?.toString() ?? '0',
+          totalRuns: p.totalRuns?.toString() ?? '0',
+          highestScore: p.highestScore?.toString() ?? '0',
+          battingAvg: p.battingAvg?.toString() ?? '0',
+          strikeRate: p.strikeRate?.toString() ?? '0',
+          totalWickets: p.totalWickets?.toString() ?? '0',
+          bestBowling: p.bestBowling ?? '',
+          bowlingAvg: p.bowlingAvg?.toString() ?? '0',
+          economy: p.economy?.toString() ?? '0',
+          cricheroesUrl: p.cricheroesUrl ?? '',
+        })
+      })
+      .catch(() => toast.error('Failed to load player'))
+      .finally(() => setFetching(false))
+  }, [id])
 
-  const set = (field: string, value: string) => setForm((f) => ({ ...f, [field]: value }))
+  const set = (field: string, value: any) => setForm((f) => ({ ...f, [field]: value }))
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     try {
-      await axios.post('/api/players', {
-        userId: linkToMember ? form.userId || undefined : undefined,
-        firstName: !linkToMember ? form.firstName : undefined,
-        lastName: !linkToMember ? form.lastName : undefined,
+      await axios.patch(`/api/players/${id}`, {
         jerseyNumber: form.jerseyNumber ? parseInt(form.jerseyNumber) : null,
-        dateOfBirth: form.dateOfBirth || null,
+        role: form.role,
+        battingStyle: form.battingStyle,
+        bowlingStyle: form.bowlingStyle,
         bio: form.bio || null,
         nationality: form.nationality || null,
+        isActive: form.isActive,
         totalMatches: form.totalMatches ? parseInt(form.totalMatches) : 0,
         totalRuns: form.totalRuns ? parseInt(form.totalRuns) : 0,
         highestScore: form.highestScore ? parseInt(form.highestScore) : 0,
@@ -65,90 +87,35 @@ export default function NewPlayerPage() {
         economy: form.economy ? parseFloat(form.economy) : 0,
         cricheroesUrl: form.cricheroesUrl || null,
       })
-      toast.success('Player created!')
+      toast.success('Player updated!')
       router.push('/admin/players')
     } catch (err: any) {
-      toast.error(err.response?.data?.error ?? 'Failed to create player')
+      toast.error(err.response?.data?.error ?? 'Failed to update player')
     } finally {
       setLoading(false)
     }
   }
+
+  if (fetching) return <div className="p-8 text-gray-400 text-sm">Loading...</div>
 
   return (
     <div className="p-8 max-w-2xl">
       <div className="flex items-center gap-3 mb-8">
         <Link href="/admin/players" className="text-gray-400 hover:text-gray-600 text-sm">← Players</Link>
         <span className="text-gray-300">/</span>
-        <h1 className="text-2xl font-bold text-gray-900 font-serif">Add Player</h1>
+        <h1 className="text-2xl font-bold text-gray-900 font-serif">Edit: {playerName}</h1>
       </div>
 
       <form onSubmit={handleSubmit} className="card p-6 space-y-5">
-        {/* Member or squad player toggle */}
-        <div>
-          <label className="label">Player Type</label>
-          <div className="flex gap-4 mt-1">
-            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-              <input type="radio" checked={linkToMember} onChange={() => setLinkToMember(true)} className="accent-cricket-green" />
-              Link to member account
-            </label>
-            <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-              <input type="radio" checked={!linkToMember} onChange={() => setLinkToMember(false)} className="accent-cricket-green" />
-              Squad player (no account)
-            </label>
-          </div>
-        </div>
-
-        {linkToMember ? (
-          <div>
-            <label className="label">Member</label>
-            <select className="input" value={form.userId} onChange={(e) => set('userId', e.target.value)}>
-              <option value="">Select a member...</option>
-              {users.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.firstName} {u.lastName} — {u.email}
-                </option>
-              ))}
-            </select>
-            {users.length === 0 && (
-              <p className="text-xs text-gray-400 mt-1">No members available — all existing members already have player profiles.</p>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="label">First Name *</label>
-              <input type="text" className="input" required={!linkToMember} placeholder="e.g. James" value={form.firstName} onChange={(e) => set('firstName', e.target.value)} />
-            </div>
-            <div>
-              <label className="label">Last Name *</label>
-              <input type="text" className="input" required={!linkToMember} placeholder="e.g. Anderson" value={form.lastName} onChange={(e) => set('lastName', e.target.value)} />
-            </div>
-          </div>
-        )}
-
         {/* Jersey + Nationality */}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="label">Jersey Number</label>
-            <input
-              type="number"
-              className="input"
-              placeholder="e.g. 7"
-              min="1"
-              max="99"
-              value={form.jerseyNumber}
-              onChange={(e) => set('jerseyNumber', e.target.value)}
-            />
+            <input type="number" className="input" placeholder="e.g. 7" min="1" max="99" value={form.jerseyNumber} onChange={(e) => set('jerseyNumber', e.target.value)} />
           </div>
           <div>
             <label className="label">Nationality</label>
-            <input
-              type="text"
-              className="input"
-              placeholder="e.g. English"
-              value={form.nationality}
-              onChange={(e) => set('nationality', e.target.value)}
-            />
+            <input type="text" className="input" placeholder="e.g. English" value={form.nationality} onChange={(e) => set('nationality', e.target.value)} />
           </div>
         </div>
 
@@ -188,27 +155,16 @@ export default function NewPlayerPage() {
           </div>
         </div>
 
-        {/* DOB */}
-        <div>
-          <label className="label">Date of Birth</label>
-          <input
-            type="date"
-            className="input"
-            value={form.dateOfBirth}
-            onChange={(e) => set('dateOfBirth', e.target.value)}
-          />
-        </div>
-
         {/* Bio */}
         <div>
           <label className="label">Bio</label>
-          <textarea
-            className="input"
-            rows={3}
-            placeholder="Brief description of the player..."
-            value={form.bio}
-            onChange={(e) => set('bio', e.target.value)}
-          />
+          <textarea className="input" rows={3} placeholder="Brief description of the player..." value={form.bio} onChange={(e) => set('bio', e.target.value)} />
+        </div>
+
+        {/* Status */}
+        <div className="flex items-center gap-2">
+          <input type="checkbox" id="isActive" checked={form.isActive} onChange={(e) => set('isActive', e.target.checked)} className="rounded border-gray-300" />
+          <label htmlFor="isActive" className="text-sm text-gray-700">Active player</label>
         </div>
 
         {/* Career Stats */}
@@ -254,7 +210,7 @@ export default function NewPlayerPage() {
           </div>
         </div>
 
-        {/* CricHeroes Profile URL */}
+        {/* CricHeroes URL */}
         <div>
           <label className="label">CricHeroes Profile URL</label>
           <input type="url" className="input" placeholder="https://cricheroes.com/player-profile/..." value={form.cricheroesUrl} onChange={(e) => set('cricheroesUrl', e.target.value)} />
@@ -262,7 +218,7 @@ export default function NewPlayerPage() {
 
         <div className="flex gap-3 pt-2">
           <button type="submit" disabled={loading} className="btn-primary">
-            {loading ? 'Creating...' : 'Create Player'}
+            {loading ? 'Saving...' : 'Save Changes'}
           </button>
           <Link href="/admin/players" className="btn-secondary">Cancel</Link>
         </div>

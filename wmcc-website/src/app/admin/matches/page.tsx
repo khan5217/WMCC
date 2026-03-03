@@ -41,7 +41,7 @@ export default async function AdminMatchesPage() {
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Format</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Score</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Result</th>
-                <th className="px-5 py-3.5"></th>
+                <th className="px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase text-left">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -72,15 +72,20 @@ export default async function AdminMatchesPage() {
                     )}
                   </td>
                   <td className="px-5 py-3.5">
-                    <Link href={`/admin/matches/${match.id}/live`} className="inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-800 font-medium">
-                      <Radio className="h-3 w-3" /> Live
-                    </Link>
+                    <div className="flex items-center gap-3">
+                      <Link href={`/admin/matches/${match.id}/live`} className="inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-800 font-medium">
+                        <Radio className="h-3 w-3" /> Live
+                      </Link>
+                      <Link href={`/admin/matches/${match.id}/edit`} className="text-xs text-cricket-green hover:underline font-medium">
+                        Edit →
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}
               {matches.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-5 py-10 text-center text-gray-400">No matches found.</td>
+                  <td colSpan={8} className="px-5 py-10 text-center text-gray-400">No matches found.</td>
                 </tr>
               )}
             </tbody>

@@ -20,6 +20,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     // Whitelist updatable fields
     const allowed = [
       'isLive', 'liveScore',
+      'opposition', 'venue', 'isHome', 'date', 'format', 'leagueName',
       'result', 'wmccScore', 'wmccOvers', 'oppositionScore', 'oppositionOvers',
       'topScorer', 'topScorerRuns', 'topBowler', 'topBowlerWickets',
       'cricheroesUrl', 'description', 'isFeatured',

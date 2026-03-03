@@ -4,7 +4,9 @@ import { verifyToken } from '@/lib/auth'
 import { z } from 'zod'
 
 const createSchema = z.object({
-  userId: z.string(),
+  userId: z.string().optional(),
+  firstName: z.string().optional(),
+  lastName: z.string().optional(),
   jerseyNumber: z.number().int().positive().nullable().optional(),
   role: z.enum(['BATSMAN', 'BOWLER', 'ALL_ROUNDER', 'WICKET_KEEPER', 'WICKET_KEEPER_BATSMAN']),
   battingStyle: z.enum(['RIGHT_HAND', 'LEFT_HAND']),
@@ -12,6 +14,16 @@ const createSchema = z.object({
   bio: z.string().nullable().optional(),
   dateOfBirth: z.string().nullable().optional(),
   nationality: z.string().nullable().optional(),
+  totalMatches: z.number().int().min(0).optional(),
+  totalRuns: z.number().int().min(0).optional(),
+  highestScore: z.number().int().min(0).optional(),
+  battingAvg: z.number().min(0).optional(),
+  strikeRate: z.number().min(0).optional(),
+  totalWickets: z.number().int().min(0).optional(),
+  bestBowling: z.string().nullable().optional(),
+  bowlingAvg: z.number().min(0).optional(),
+  economy: z.number().min(0).optional(),
+  cricheroesUrl: z.string().nullable().optional(),
 })
 
 function getAuth(req: NextRequest) {
@@ -46,9 +58,30 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const data = createSchema.parse(body)
 
+    let userId = data.userId
+
+    // If no member account selected, auto-create a placeholder user
+    if (!userId) {
+      if (!data.firstName || !data.lastName) {
+        return NextResponse.json({ error: 'First name and last name are required when not linking to a member account' }, { status: 400 })
+      }
+      const random = Math.random().toString(36).slice(2, 9)
+      const placeholderUser = await prisma.user.create({
+        data: {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: `squad-player-${random}@wmcc.internal`,
+          phone: `SQUAD-${Date.now()}-${random}`,
+          role: 'PLAYER',
+          isVerified: false,
+        },
+      })
+      userId = placeholderUser.id
+    }
+
     const player = await prisma.player.create({
       data: {
-        userId: data.userId,
+        userId,
         jerseyNumber: data.jerseyNumber ?? null,
         role: data.role,
         battingStyle: data.battingStyle,
@@ -56,6 +89,16 @@ export async function POST(req: NextRequest) {
         bio: data.bio ?? null,
         dateOfBirth: data.dateOfBirth ? new Date(data.dateOfBirth) : null,
         nationality: data.nationality ?? null,
+        totalMatches: data.totalMatches ?? 0,
+        totalRuns: data.totalRuns ?? 0,
+        highestScore: data.highestScore ?? 0,
+        battingAvg: data.battingAvg ?? 0,
+        strikeRate: data.strikeRate ?? 0,
+        totalWickets: data.totalWickets ?? 0,
+        bestBowling: data.bestBowling ?? null,
+        bowlingAvg: data.bowlingAvg ?? 0,
+        economy: data.economy ?? 0,
+        cricheroesUrl: data.cricheroesUrl ?? null,
       },
     })
 

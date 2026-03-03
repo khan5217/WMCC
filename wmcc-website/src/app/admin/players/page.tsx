@@ -31,6 +31,7 @@ export default async function AdminPlayersPage() {
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Bowling</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Jersey</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Status</th>
+                <th className="px-5 py-3.5"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -49,11 +50,16 @@ export default async function AdminPlayersPage() {
                       {player.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </td>
+                  <td className="px-5 py-3.5">
+                    <Link href={`/admin/players/${player.id}/edit`} className="text-xs text-cricket-green hover:underline font-medium whitespace-nowrap">
+                      Edit →
+                    </Link>
+                  </td>
                 </tr>
               ))}
               {players.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-5 py-10 text-center text-gray-400">No players found.</td>
+                  <td colSpan={8} className="px-5 py-10 text-center text-gray-400">No players found.</td>
                 </tr>
               )}
             </tbody>

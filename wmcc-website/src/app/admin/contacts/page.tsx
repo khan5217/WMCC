@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { formatDate } from '@/lib/utils'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
@@ -30,9 +31,10 @@ export default async function AdminContactsPage() {
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Name</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Email</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Subject</th>
-                <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Message</th>
+                <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Preview</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Status</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Date</th>
+                <th className="px-5 py-3.5"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -53,11 +55,16 @@ export default async function AdminContactsPage() {
                     </span>
                   </td>
                   <td className="px-5 py-3.5 text-gray-400 text-xs">{formatDate(msg.createdAt)}</td>
+                  <td className="px-5 py-3.5">
+                    <Link href={`/admin/contacts/${msg.id}`} className="text-xs text-cricket-green hover:underline font-medium whitespace-nowrap">
+                      View →
+                    </Link>
+                  </td>
                 </tr>
               ))}
               {messages.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-5 py-10 text-center text-gray-400">No contact messages yet.</td>
+                  <td colSpan={7} className="px-5 py-10 text-center text-gray-400">No contact messages yet.</td>
                 </tr>
               )}
             </tbody>
