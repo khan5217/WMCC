@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
-import { Plus } from 'lucide-react'
+import { Plus, Radio } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -41,18 +41,26 @@ export default async function AdminMatchesPage() {
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Format</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Score</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Result</th>
+                <th className="px-5 py-3.5"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {matches.map((match) => (
-                <tr key={match.id} className="hover:bg-gray-50">
+                <tr key={match.id} className={`hover:bg-gray-50 ${match.isLive ? 'bg-red-50' : ''}`}>
                   <td className="px-5 py-3.5 text-gray-400 text-xs">{formatDate(match.date)}</td>
                   <td className="px-5 py-3.5 text-gray-500 text-xs">{match.team.type.replace('_', ' ')}</td>
-                  <td className="px-5 py-3.5 font-medium text-gray-900">{match.opposition}</td>
+                  <td className="px-5 py-3.5 font-medium text-gray-900">
+                    {match.isLive && <span className="inline-flex items-center gap-1 text-xs font-bold text-red-600 mr-1"><Radio className="h-3 w-3" /> LIVE</span>}
+                    {match.opposition}
+                  </td>
                   <td className="px-5 py-3.5 text-gray-500">{match.venue} {match.isHome ? '(H)' : '(A)'}</td>
                   <td className="px-5 py-3.5 text-gray-500 text-xs">{match.format.replace('_', ' ')}</td>
                   <td className="px-5 py-3.5 text-gray-500 text-xs">
-                    {match.wmccScore ?? '—'} {match.oppositionScore ? `/ ${match.oppositionScore}` : ''}
+                    {match.isLive && match.liveScore ? (
+                      <span className="text-red-600 font-mono font-medium">{match.liveScore}</span>
+                    ) : (
+                      <>{match.wmccScore ?? '—'} {match.oppositionScore ? `/ ${match.oppositionScore}` : ''}</>
+                    )}
                   </td>
                   <td className="px-5 py-3.5">
                     {match.result ? (
@@ -62,6 +70,11 @@ export default async function AdminMatchesPage() {
                     ) : (
                       <span className="text-gray-300 text-xs">—</span>
                     )}
+                  </td>
+                  <td className="px-5 py-3.5">
+                    <Link href={`/admin/matches/${match.id}/live`} className="inline-flex items-center gap-1 text-xs text-red-600 hover:text-red-800 font-medium">
+                      <Radio className="h-3 w-3" /> Live
+                    </Link>
                   </td>
                 </tr>
               ))}

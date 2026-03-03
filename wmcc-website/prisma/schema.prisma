@@ -185,6 +185,17 @@ model Player {
   dateOfBirth   DateTime?
   nationality   String?
   isActive      Boolean      @default(true)
+  // Career stats (manually maintained / imported from CricHeroes)
+  totalMatches  Int          @default(0)
+  totalRuns     Int          @default(0)
+  highestScore  Int          @default(0)
+  battingAvg    Float        @default(0)
+  strikeRate    Float        @default(0)
+  totalWickets  Int          @default(0)
+  bestBowling   String?
+  bowlingAvg    Float        @default(0)
+  economy       Float        @default(0)
+  cricheroesUrl String?
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
@@ -229,11 +240,19 @@ model Match {
   wmccOvers       Float?
   oppositionScore String?
   oppositionOvers Float?
-  description     String?     // match report summary
-  leagueName      String?     // e.g. "South Northants League"
-  isFeatured      Boolean     @default(false)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  description      String?     // match report summary
+  leagueName       String?     // e.g. "South Northants League"
+  isFeatured       Boolean     @default(false)
+  // Live score & CricHeroes integration
+  isLive           Boolean     @default(false)
+  liveScore        String?     // e.g. "WMCC 87/3 (18.2 ov)"
+  topScorer        String?
+  topScorerRuns    Int?
+  topBowler        String?
+  topBowlerWickets Int?
+  cricheroesUrl    String?
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 
   team         Team          @relation(fields: [teamId], references: [id])
   performances Performance[]

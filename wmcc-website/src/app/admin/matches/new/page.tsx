@@ -29,6 +29,11 @@ export default function NewMatchPage() {
     leagueName: '',
     description: '',
     isFeatured: false,
+    topScorer: '',
+    topScorerRuns: '',
+    topBowler: '',
+    topBowlerWickets: '',
+    cricheroesUrl: '',
   })
 
   const fetchTeams = () => {
@@ -83,6 +88,11 @@ export default function NewMatchPage() {
         leagueName: form.leagueName || null,
         description: form.description || null,
         isFeatured: form.isFeatured,
+        topScorer: form.topScorer || null,
+        topScorerRuns: form.topScorerRuns ? parseInt(form.topScorerRuns) : null,
+        topBowler: form.topBowler || null,
+        topBowlerWickets: form.topBowlerWickets ? parseInt(form.topBowlerWickets) : null,
+        cricheroesUrl: form.cricheroesUrl || null,
       })
       toast.success('Match created!')
       router.push('/admin/matches')
@@ -279,6 +289,38 @@ export default function NewMatchPage() {
             value={form.description}
             onChange={(e) => set('description', e.target.value)}
           />
+        </div>
+
+        {/* Key Performers */}
+        <div className="border-t pt-4">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Key Performers (optional)</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="label">Top Scorer</label>
+              <input type="text" className="input" placeholder="e.g. J. Smith" value={form.topScorer} onChange={(e) => set('topScorer', e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Runs Scored</label>
+              <input type="number" className="input" placeholder="78" min="0" value={form.topScorerRuns} onChange={(e) => set('topScorerRuns', e.target.value)} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-4 mt-3">
+            <div>
+              <label className="label">Top Bowler</label>
+              <input type="text" className="input" placeholder="e.g. A. Khan" value={form.topBowler} onChange={(e) => set('topBowler', e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Wickets Taken</label>
+              <input type="number" className="input" placeholder="4" min="0" value={form.topBowlerWickets} onChange={(e) => set('topBowlerWickets', e.target.value)} />
+            </div>
+          </div>
+        </div>
+
+        {/* CricHeroes URL */}
+        <div>
+          <label className="label">CricHeroes Scorecard URL</label>
+          <input type="url" className="input" placeholder="https://cricheroes.com/..." value={form.cricheroesUrl} onChange={(e) => set('cricheroesUrl', e.target.value)} />
+          <p className="text-xs text-gray-400 mt-1">Paste the match scorecard link from the CricHeroes app.</p>
         </div>
 
         {/* Featured */}

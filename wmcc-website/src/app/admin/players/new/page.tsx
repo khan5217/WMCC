@@ -21,6 +21,16 @@ export default function NewPlayerPage() {
     bio: '',
     dateOfBirth: '',
     nationality: '',
+    totalMatches: '',
+    totalRuns: '',
+    highestScore: '',
+    battingAvg: '',
+    strikeRate: '',
+    totalWickets: '',
+    bestBowling: '',
+    bowlingAvg: '',
+    economy: '',
+    cricheroesUrl: '',
   })
 
   useEffect(() => {
@@ -39,6 +49,16 @@ export default function NewPlayerPage() {
         dateOfBirth: form.dateOfBirth || null,
         bio: form.bio || null,
         nationality: form.nationality || null,
+        totalMatches: form.totalMatches ? parseInt(form.totalMatches) : 0,
+        totalRuns: form.totalRuns ? parseInt(form.totalRuns) : 0,
+        highestScore: form.highestScore ? parseInt(form.highestScore) : 0,
+        battingAvg: form.battingAvg ? parseFloat(form.battingAvg) : 0,
+        strikeRate: form.strikeRate ? parseFloat(form.strikeRate) : 0,
+        totalWickets: form.totalWickets ? parseInt(form.totalWickets) : 0,
+        bestBowling: form.bestBowling || null,
+        bowlingAvg: form.bowlingAvg ? parseFloat(form.bowlingAvg) : 0,
+        economy: form.economy ? parseFloat(form.economy) : 0,
+        cricheroesUrl: form.cricheroesUrl || null,
       })
       toast.success('Player created!')
       router.push('/admin/players')
@@ -157,6 +177,55 @@ export default function NewPlayerPage() {
             value={form.bio}
             onChange={(e) => set('bio', e.target.value)}
           />
+        </div>
+
+        {/* Career Stats */}
+        <div className="border-t pt-4">
+          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Career Stats (from CricHeroes)</p>
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="label">Matches</label>
+              <input type="number" className="input" placeholder="0" min="0" value={form.totalMatches} onChange={(e) => set('totalMatches', e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Total Runs</label>
+              <input type="number" className="input" placeholder="0" min="0" value={form.totalRuns} onChange={(e) => set('totalRuns', e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Highest Score</label>
+              <input type="number" className="input" placeholder="0" min="0" value={form.highestScore} onChange={(e) => set('highestScore', e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Batting Avg</label>
+              <input type="number" className="input" placeholder="0.00" step="0.01" min="0" value={form.battingAvg} onChange={(e) => set('battingAvg', e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Strike Rate</label>
+              <input type="number" className="input" placeholder="0.00" step="0.01" min="0" value={form.strikeRate} onChange={(e) => set('strikeRate', e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Wickets</label>
+              <input type="number" className="input" placeholder="0" min="0" value={form.totalWickets} onChange={(e) => set('totalWickets', e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Best Bowling</label>
+              <input type="text" className="input" placeholder="e.g. 5/32" value={form.bestBowling} onChange={(e) => set('bestBowling', e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Bowling Avg</label>
+              <input type="number" className="input" placeholder="0.00" step="0.01" min="0" value={form.bowlingAvg} onChange={(e) => set('bowlingAvg', e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Economy</label>
+              <input type="number" className="input" placeholder="0.00" step="0.01" min="0" value={form.economy} onChange={(e) => set('economy', e.target.value)} />
+            </div>
+          </div>
+        </div>
+
+        {/* CricHeroes Profile URL */}
+        <div>
+          <label className="label">CricHeroes Profile URL</label>
+          <input type="url" className="input" placeholder="https://cricheroes.com/player-profile/..." value={form.cricheroesUrl} onChange={(e) => set('cricheroesUrl', e.target.value)} />
         </div>
 
         <div className="flex gap-3 pt-2">
