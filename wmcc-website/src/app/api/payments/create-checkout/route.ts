@@ -20,7 +20,16 @@ export async function POST(req: NextRequest) {
 
     const product = MEMBERSHIP_PRODUCTS[membershipTier]
     const season = new Date().getFullYear()
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL!
+
+    // Derive base URL from env var, Vercel's auto-provided URL, or request headers
+    const baseUrl =
+      process.env.NEXT_PUBLIC_SITE_URL ??
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ??
+      (() => {
+        const host = req.headers.get('host')!
+        const proto = req.headers.get('x-forwarded-proto') ?? 'https'
+        return `${proto}://${host}`
+      })()
 
     const lineItem: any = {
       price_data: {
