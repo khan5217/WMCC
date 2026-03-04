@@ -1,18 +1,8 @@
-import nodemailer from 'nodemailer'
+import { Resend } from 'resend'
 
-const port = parseInt(process.env.SMTP_PORT ?? '465')
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST!,
-  port,
-  secure: port === 465,
-  requireTLS: port === 587,
-  auth: {
-    user: process.env.SMTP_USER!,
-    pass: process.env.SMTP_PASS!,
-  },
-})
+const resend = new Resend(process.env.RESEND_API_KEY)
 
-const FROM = `"WMCC Milton Keynes" <${process.env.SMTP_FROM ?? process.env.SMTP_USER}>`
+const FROM = process.env.SMTP_FROM ?? 'WMCC <noreply@wmccmk.co.uk>'
 const CLUB_EMAIL = 'contact@wmccmk.com'
 
 type LoginMeta = {
@@ -105,19 +95,15 @@ export async function sendLoginAlert(
   firstName: string,
   meta: LoginMeta
 ): Promise<void> {
-  if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
-    // Email not configured — skip silently (don't break login)
-    return
-  }
+  if (!process.env.RESEND_API_KEY) return
   try {
-    await transporter.sendMail({
+    await resend.emails.send({
       from: FROM,
       to,
       subject: 'New sign-in to your WMCC account',
       html: loginAlertHtml(firstName, meta),
     })
   } catch (err) {
-    // Non-critical — log but never block login
     console.error('Login alert email failed:', err)
   }
 }
