@@ -1,8 +1,22 @@
-import { Resend } from 'resend'
+import nodemailer from 'nodemailer'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function createTransporter() {
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST ?? 'smtp.zoho.eu',
+    port: 587,
+    secure: false,
+    requireTLS: true,
+    tls: {
+      minVersion: 'TLSv1.2',
+    },
+    auth: {
+      user: process.env.SMTP_USER!,
+      pass: process.env.SMTP_PASS!,
+    },
+  })
+}
 
-const FROM = process.env.SMTP_FROM ?? 'WMCC <noreply@wmccmk.co.uk>'
+const FROM = `"WMCC Milton Keynes" <${process.env.SMTP_FROM ?? process.env.SMTP_USER}>`
 const CLUB_EMAIL = 'contact@wmccmk.com'
 
 type LoginMeta = {
@@ -95,9 +109,10 @@ export async function sendLoginAlert(
   firstName: string,
   meta: LoginMeta
 ): Promise<void> {
-  if (!process.env.RESEND_API_KEY) return
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) return
   try {
-    await resend.emails.send({
+    const transporter = createTransporter()
+    await transporter.sendMail({
       from: FROM,
       to,
       subject: 'New sign-in to your WMCC account',
