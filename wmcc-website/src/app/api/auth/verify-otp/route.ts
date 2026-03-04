@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyOTP } from '@/lib/twilio'
 import { createSession } from '@/lib/auth'
+import { sendLoginAlert } from '@/lib/email'
 import { z } from 'zod'
 
 const schema = z.object({
@@ -33,6 +34,12 @@ export async function POST(req: NextRequest) {
     }
 
     const token = await createSession(userId)
+
+    // Fire login alert email — non-blocking, never delays login
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? req.headers.get('x-real-ip') ?? 'Unknown'
+    const ua = req.headers.get('user-agent') ?? 'Unknown'
+    const time = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', dateStyle: 'full', timeStyle: 'short' })
+    void sendLoginAlert(user.email, user.firstName, { time, ip, userAgent: ua })
 
     const response = NextResponse.json({
       success: true,

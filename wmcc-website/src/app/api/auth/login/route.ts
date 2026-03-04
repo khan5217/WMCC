@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { comparePassword, createSession } from '@/lib/auth'
 import { sendOTP } from '@/lib/twilio'
+import { sendLoginAlert } from '@/lib/email'
 import { z } from 'zod'
 
 const loginSchema = z.object({
@@ -51,6 +52,12 @@ export async function POST(req: NextRequest) {
         maxAge: 7 * 24 * 60 * 60,
         path: '/',
       })
+
+      const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? req.headers.get('x-real-ip') ?? 'Unknown'
+      const ua = req.headers.get('user-agent') ?? 'Unknown'
+      const time = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', dateStyle: 'full', timeStyle: 'short' })
+      void sendLoginAlert(user.email, user.firstName, { time, ip, userAgent: ua })
+
       return response
     }
 
