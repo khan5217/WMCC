@@ -6,7 +6,7 @@ const client = twilio(
   process.env.TWILIO_AUTH_TOKEN!
 )
 
-const TWILIO_FROM = process.env.TWILIO_PHONE_NUMBER!
+const TWILIO_FROM = process.env.TWILIO_SENDER_ID!
 const OTP_EXPIRY_MINUTES = 10
 
 function generateOTP(): string {
