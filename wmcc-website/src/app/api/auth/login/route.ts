@@ -10,6 +10,10 @@ const loginSchema = z.object({
   password: z.string().min(1),
 })
 
+// Dummy hash used to ensure constant-time comparison even for unknown emails,
+// preventing timing-based email enumeration attacks.
+const DUMMY_HASH = '$2a$12$dummy.hash.to.prevent.timing.attack.enumeration.xx'
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -17,12 +21,11 @@ export async function POST(req: NextRequest) {
 
     const user = await prisma.user.findUnique({ where: { email } })
 
-    if (!user || !user.passwordHash) {
-      return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
-    }
+    // Always run bcrypt to prevent timing-based email enumeration
+    const hashToCompare = user?.passwordHash ?? DUMMY_HASH
+    const valid = await comparePassword(password, hashToCompare)
 
-    const valid = await comparePassword(password, user.passwordHash)
-    if (!valid) {
+    if (!user || !user.passwordHash || !valid) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 })
     }
 
