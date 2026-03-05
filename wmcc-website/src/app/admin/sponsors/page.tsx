@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
+import { DeleteSponsorButton } from './DeleteSponsorButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -40,6 +41,7 @@ export default async function AdminSponsorsPage() {
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Website</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Logo URL</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Active</th>
+                <th className="px-5 py-3.5" />
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -69,6 +71,9 @@ export default async function AdminSponsorsPage() {
                     ) : (
                       <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-500">Inactive</span>
                     )}
+                  </td>
+                  <td className="px-5 py-3.5 text-right">
+                    <DeleteSponsorButton id={sponsor.id} name={sponsor.name} />
                   </td>
                 </tr>
               ))}
