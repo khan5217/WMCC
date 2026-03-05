@@ -1,13 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Shield, Eye, EyeOff, Smartphone, ArrowRight, Lock } from 'lucide-react'
+import { Shield, Eye, EyeOff, Smartphone, ArrowRight, Lock, CheckCircle } from 'lucide-react'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
 type Step = 'credentials' | 'otp'
+
+const RESEND_COOLDOWN = 30
 
 export default function MembersLoginPage() {
   const router = useRouter()
@@ -24,13 +26,31 @@ export default function MembersLoginPage() {
   const [maskedPhone, setMaskedPhone] = useState('')
   const [otp, setOtp] = useState('')
 
+  // Resend cooldown
+  const [resendCooldown, setResendCooldown] = useState(0)
+  const cooldownRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  const startCooldown = () => {
+    setResendCooldown(RESEND_COOLDOWN)
+    cooldownRef.current = setInterval(() => {
+      setResendCooldown(prev => {
+        if (prev <= 1) {
+          clearInterval(cooldownRef.current!)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+  }
+
+  useEffect(() => () => { if (cooldownRef.current) clearInterval(cooldownRef.current) }, [])
+
   const handleCredentials = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     try {
-      const res = await axios.post('/api/auth/login', { email, password })
+      const res = await axios.post('/api/auth/login', { email: email.trim(), password })
       if (res.data.success) {
-        // 2FA disabled — session created directly
         toast.success('Welcome back!')
         router.push('/members')
         router.refresh()
@@ -38,6 +58,7 @@ export default function MembersLoginPage() {
         setUserId(res.data.userId)
         setMaskedPhone(res.data.maskedPhone)
         setStep('otp')
+        startCooldown()
         toast.success(res.data.message)
       }
     } catch (err: any) {
@@ -47,25 +68,31 @@ export default function MembersLoginPage() {
     }
   }
 
-  const handleOTP = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const submitOtp = async (code: string) => {
     setLoading(true)
     try {
-      await axios.post('/api/auth/verify-otp', { userId, code: otp })
+      await axios.post('/api/auth/verify-otp', { userId, code })
       toast.success('Welcome back!')
       router.push('/members')
       router.refresh()
     } catch (err: any) {
       toast.error(err.response?.data?.error ?? 'Verification failed')
-    } finally {
       setLoading(false)
     }
   }
 
+  const handleOtpChange = (value: string) => {
+    const digits = value.replace(/\D/g, '').slice(0, 6)
+    setOtp(digits)
+    if (digits.length === 6) submitOtp(digits)
+  }
+
   const handleResendOTP = async () => {
+    if (resendCooldown > 0) return
     try {
-      await axios.post('/api/auth/login', { email, password })
+      await axios.post('/api/auth/login', { email: email.trim(), password })
       toast.success('New code sent!')
+      startCooldown()
     } catch {
       toast.error('Failed to resend code')
     }
@@ -94,13 +121,16 @@ export default function MembersLoginPage() {
         </div>
 
         {/* 2FA progress indicator */}
-        <div className="flex items-center gap-2 mb-8">
-          <div className={`flex-1 h-1.5 rounded-full ${step === 'credentials' ? 'bg-cricket-green' : 'bg-cricket-green'}`} />
+        <div className="flex items-center gap-2 mb-2">
+          <div className="flex-1 h-1.5 rounded-full bg-cricket-green" />
           <div className={`flex-1 h-1.5 rounded-full ${step === 'otp' ? 'bg-cricket-green' : 'bg-gray-200'}`} />
         </div>
         <div className="flex text-xs text-gray-400 mb-6 gap-2">
-          <div className={`flex-1 text-center ${step === 'credentials' ? 'text-cricket-green font-medium' : ''}`}>
-            1. Enter credentials
+          <div className="flex-1 text-center flex items-center justify-center gap-1">
+            {step === 'otp' && <CheckCircle className="h-3 w-3 text-cricket-green" />}
+            <span className={step === 'otp' ? 'text-cricket-green' : 'text-cricket-green font-medium'}>
+              1. Enter credentials
+            </span>
           </div>
           <div className={`flex-1 text-center ${step === 'otp' ? 'text-cricket-green font-medium' : ''}`}>
             2. SMS verification
@@ -154,7 +184,7 @@ export default function MembersLoginPage() {
               </div>
             </form>
           ) : (
-            <form onSubmit={handleOTP} className="space-y-5">
+            <div className="space-y-5">
               <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 text-sm text-blue-700">
                 <div className="flex items-start gap-2">
                   <Shield className="h-4 w-4 mt-0.5 flex-shrink-0" />
@@ -177,23 +207,25 @@ export default function MembersLoginPage() {
                   required
                   placeholder="• • • • • •"
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  onChange={(e) => handleOtpChange(e.target.value)}
                   autoFocus
+                  disabled={loading}
                 />
+                {loading && (
+                  <p className="text-xs text-center text-gray-400 mt-2">Verifying...</p>
+                )}
               </div>
-
-              <button type="submit" disabled={loading} className="btn-primary w-full flex items-center justify-center gap-2">
-                {loading ? 'Verifying...' : 'Verify & Sign In'}
-                <Shield className="h-4 w-4" />
-              </button>
 
               <div className="text-center">
                 <button
                   type="button"
                   onClick={handleResendOTP}
-                  className="text-sm text-cricket-green hover:underline"
+                  disabled={resendCooldown > 0}
+                  className="text-sm text-cricket-green hover:underline disabled:text-gray-400 disabled:no-underline disabled:cursor-default"
                 >
-                  Didn&apos;t receive it? Send again
+                  {resendCooldown > 0
+                    ? `Resend in ${resendCooldown}s`
+                    : "Didn't receive it? Send again"}
                 </button>
               </div>
 
@@ -204,7 +236,7 @@ export default function MembersLoginPage() {
               >
                 ← Back
               </button>
-            </form>
+            </div>
           )}
         </div>
 
