@@ -94,7 +94,7 @@ export function SponsorsSection({ sponsors }: { sponsors: Sponsor[] }) {
                     <img
                       src={sponsor.logoUrl}
                       alt={sponsor.name}
-                      className="h-8 w-auto object-contain opacity-70 hover:opacity-100 transition-opacity"
+                      className="h-10 w-32 object-contain opacity-70 hover:opacity-100 transition-opacity"
                     />
                   ) : (
                     <span className="text-gray-300 font-medium text-sm">{sponsor.name}</span>
