@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
         status: 'PUBLISHED',
         isFeatured: true,
         publishedAt: new Date('2026-03-03'),
+        coverImage: 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=1200&q=80',
       },
       create: {
         title: "2026 Season Is Almost Here — Let's Make It Our Best Yet!",
@@ -39,7 +40,7 @@ export async function POST(req: NextRequest) {
 <p>We are delighted to welcome several exciting new players to the squad this season. A full squad announcement will follow shortly.</p>
 <p>If you would like to trial for WMCC or know someone who would, please contact us at <a href="mailto:contact@wmccmk.com">contact@wmccmk.com</a>.</p>
 <p><em>Here's to a fantastic 2026 season — see you on the pitch!</em></p>`,
-        coverImage: null,
+        coverImage: 'https://images.unsplash.com/photo-1531415074968-036ba1b575da?auto=format&fit=crop&w=1200&q=80',
         authorId: ctx.userId,
         status: 'PUBLISHED',
         isFeatured: true,

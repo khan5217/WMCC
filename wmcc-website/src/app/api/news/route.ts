@@ -3,6 +3,20 @@ import { prisma } from '@/lib/prisma'
 import { withAuth } from '@/lib/api-auth'
 import { z } from 'zod'
 
+export async function DELETE(req: NextRequest) {
+  return withAuth(req, async (ctx) => {
+    if (ctx.role !== 'ADMIN' && ctx.role !== 'COMMITTEE') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+    const { searchParams } = new URL(req.url)
+    const id = searchParams.get('id')
+    if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
+
+    await prisma.newsArticle.delete({ where: { id } })
+    return NextResponse.json({ success: true })
+  })
+}
+
 const schema = z.object({
   title: z.string().min(1),
   slug: z.string().min(1),

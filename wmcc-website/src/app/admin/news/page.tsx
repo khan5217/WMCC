@@ -1,7 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
-import { Plus, Edit, Trash2 } from 'lucide-react'
+import { Plus, Edit } from 'lucide-react'
+import { DeleteNewsButton } from './DeleteNewsButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -64,6 +65,7 @@ export default async function AdminNewsPage() {
                       <Link href={`/news/${article.slug}`} className="text-cricket-green hover:underline text-xs" target="_blank">
                         View
                       </Link>
+                      <DeleteNewsButton id={article.id} title={article.title} />
                     </div>
                   </td>
                 </tr>
