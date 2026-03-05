@@ -52,12 +52,9 @@ export default function ForgotPasswordPage() {
               <p className="text-sm text-gray-600">
                 The link expires in <strong>1 hour</strong>. Check your spam folder if you don't see it.
               </p>
-              <button
-                onClick={() => { setSent(false); setEmail('') }}
-                className="text-sm text-cricket-green hover:underline"
-              >
-                Send to a different email
-              </button>
+              <p className="text-xs text-gray-400">
+                The link will only be sent if this email matches a registered member account.
+              </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
