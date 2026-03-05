@@ -90,6 +90,189 @@ function loginAlertHtml(firstName: string, meta: LoginMeta): string {
 </html>`
 }
 
+function welcomeHtml(firstName: string, tier: string): string {
+  const tierLabel: Record<string, string> = {
+    PLAYING_SENIOR: 'Playing (Senior)',
+    PLAYING_JUNIOR: 'Playing (Junior)',
+    SOCIAL: 'Social',
+    FAMILY: 'Family',
+    LIFE: 'Life Member',
+  }
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+        <tr>
+          <td style="background:#1a5c38;border-radius:12px 12px 0 0;padding:32px 40px;text-align:center;">
+            <p style="margin:0;color:#ffffff;font-size:22px;font-weight:bold;letter-spacing:1px;">WMCC</p>
+            <p style="margin:4px 0 0;color:#86efac;font-size:13px;">Milton Keynes Cricket Club</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#ffffff;padding:40px;border-radius:0 0 12px 12px;">
+            <p style="margin:0 0 8px;font-size:20px;font-weight:bold;color:#111827;">Welcome to WMCC, ${firstName}!</p>
+            <p style="margin:0 0 24px;font-size:15px;color:#6b7280;">
+              Your account has been created. We're thrilled to have you as part of the club.
+            </p>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:8px;margin-bottom:24px;">
+              <tr>
+                <td style="padding:16px 20px;">
+                  <p style="margin:0;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">Membership Type</p>
+                  <p style="margin:4px 0 0;font-size:15px;color:#111827;font-weight:600;">${tierLabel[tier] ?? tier}</p>
+                </td>
+              </tr>
+            </table>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px;margin-bottom:28px;">
+              <tr>
+                <td style="padding:16px 20px;">
+                  <p style="margin:0;font-size:14px;color:#065f46;">
+                    Your membership is currently <strong>pending approval</strong>. Once approved by the committee
+                    you'll have full access to the members area.
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0 0 8px;font-size:14px;color:#374151;">In the meantime, you can:</p>
+            <ul style="margin:0 0 24px;padding-left:20px;font-size:14px;color:#374151;line-height:1.8;">
+              <li>Browse our latest news and match results</li>
+              <li>View the squad and fixtures</li>
+              <li>Contact the club at <a href="mailto:${CLUB_EMAIL}" style="color:#1a5c38;">${CLUB_EMAIL}</a></li>
+            </ul>
+
+            <p style="margin:0;font-size:13px;color:#9ca3af;text-align:center;">
+              This is an automated message from WMCC Milton Keynes Cricket Club.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px;text-align:center;">
+            <p style="margin:0;font-size:12px;color:#9ca3af;">
+              WMCC · Crownhill Cricket Ground · 6 Marley Grove · Milton Keynes · MK8 0AT
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}
+
+function passwordResetHtml(firstName: string, resetUrl: string): string {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+        <tr>
+          <td style="background:#1a5c38;border-radius:12px 12px 0 0;padding:32px 40px;text-align:center;">
+            <p style="margin:0;color:#ffffff;font-size:22px;font-weight:bold;letter-spacing:1px;">WMCC</p>
+            <p style="margin:4px 0 0;color:#86efac;font-size:13px;">Milton Keynes Cricket Club</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#ffffff;padding:40px;border-radius:0 0 12px 12px;">
+            <p style="margin:0 0 8px;font-size:20px;font-weight:bold;color:#111827;">Reset your password</p>
+            <p style="margin:0 0 24px;font-size:15px;color:#6b7280;">
+              Hi ${firstName}, we received a request to reset your WMCC account password.
+              Click the button below — the link expires in <strong>1 hour</strong>.
+            </p>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+              <tr>
+                <td align="center">
+                  <a href="${resetUrl}"
+                     style="display:inline-block;background:#1a5c38;color:#ffffff;font-size:15px;font-weight:bold;
+                            text-decoration:none;padding:14px 32px;border-radius:8px;">
+                    Reset Password
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0 0 16px;font-size:13px;color:#6b7280;text-align:center;">
+              Or copy and paste this link into your browser:
+            </p>
+            <p style="margin:0 0 24px;font-size:12px;color:#9ca3af;text-align:center;word-break:break-all;">
+              ${resetUrl}
+            </p>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;margin-bottom:28px;">
+              <tr>
+                <td style="padding:16px 20px;">
+                  <p style="margin:0;font-size:14px;color:#92400e;">
+                    If you didn't request a password reset, you can safely ignore this email.
+                    Your password will not change.
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0;font-size:13px;color:#9ca3af;text-align:center;">
+              This is an automated security email from WMCC Milton Keynes Cricket Club.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px;text-align:center;">
+            <p style="margin:0;font-size:12px;color:#9ca3af;">
+              WMCC · Crownhill Cricket Ground · 6 Marley Grove · Milton Keynes · MK8 0AT
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}
+
+export async function sendWelcomeEmail(
+  to: string,
+  firstName: string,
+  membershipTier: string
+): Promise<void> {
+  if (!process.env.RESEND_API_KEY) return
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to,
+      subject: 'Welcome to WMCC Milton Keynes Cricket Club',
+      html: welcomeHtml(firstName, membershipTier),
+    })
+    if (error) console.error('Welcome email failed:', error)
+  } catch (err) {
+    console.error('Welcome email failed:', err)
+  }
+}
+
+export async function sendPasswordResetEmail(
+  to: string,
+  firstName: string,
+  resetUrl: string
+): Promise<void> {
+  if (!process.env.RESEND_API_KEY) return
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to,
+      subject: 'Reset your WMCC password',
+      html: passwordResetHtml(firstName, resetUrl),
+    })
+    if (error) console.error('Password reset email failed:', error)
+  } catch (err) {
+    console.error('Password reset email failed:', err)
+  }
+}
+
 export async function sendLoginAlert(
   to: string,
   firstName: string,

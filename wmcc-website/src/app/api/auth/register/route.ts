@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hashPassword } from '@/lib/auth'
 import { sendOTP } from '@/lib/twilio'
+import { sendWelcomeEmail } from '@/lib/email'
 import { z } from 'zod'
 
 const registerSchema = z.object({
@@ -46,6 +47,9 @@ export async function POST(req: NextRequest) {
         isVerified: false,
       },
     })
+
+    // Send welcome email (non-blocking)
+    void sendWelcomeEmail(user.email, user.firstName, user.membershipTier ?? data.membershipTier)
 
     // Send OTP to verify phone
     const otpResult = await sendOTP(user.id, user.phone)
