@@ -20,7 +20,14 @@ export function SponsorsSection({ sponsors }: { sponsors: Sponsor[] }) {
     (s) => s.tier === 'gold' && s.website !== MAIN_SPONSOR.website
   )
   const goldSponsors = [MAIN_SPONSOR, ...dbGoldSponsors]
-  const otherSponsors = sponsors.filter((s) => s.tier !== 'gold')
+  const silverSponsors = sponsors.filter((s) => s.tier === 'silver')
+  const standardSponsors = sponsors.filter((s) => s.tier !== 'gold' && s.tier !== 'silver')
+
+  // All featured sponsors shown at the same card size in one row
+  const featuredSponsors = [
+    ...goldSponsors.map((s) => ({ ...s, tier: 'gold' as const })),
+    ...silverSponsors.map((s) => ({ ...s, tier: 'silver' as const })),
+  ]
 
   return (
     <section className="py-16 bg-gray-900">
@@ -36,52 +43,58 @@ export function SponsorsSection({ sponsors }: { sponsors: Sponsor[] }) {
           <p className="text-gray-400 mt-2 text-sm">Proudly supported by businesses that back local cricket in Milton Keynes</p>
         </div>
 
-        {/* Gold / Main Sponsors */}
-        {goldSponsors.length > 0 && (
+        {/* Gold + Silver Sponsors — same card size, side by side */}
+        {featuredSponsors.length > 0 && (
           <div className="mb-10">
-            <p className="text-center text-xs font-semibold text-cricket-gold/70 uppercase tracking-widest mb-6">
-              ★ &nbsp;Main Sponsor&nbsp; ★
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-6">
-              {goldSponsors.map((sponsor) => (
-                <a
-                  key={sponsor.id}
-                  href={sponsor.website ?? '#'}
-                  target={sponsor.website ? '_blank' : undefined}
-                  rel="noopener noreferrer"
-                  className="group bg-white/5 hover:bg-white/10 border border-cricket-gold/40 hover:border-cricket-gold rounded-xl px-10 py-7 flex flex-col items-center gap-4 transition-all duration-300 min-w-[220px] max-w-xs"
-                >
-                  {sponsor.logoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={sponsor.logoUrl}
-                      alt={sponsor.name}
-                      className="h-16 w-auto object-contain"
-                    />
-                  ) : (
-                    <span className="text-white font-bold text-2xl group-hover:text-cricket-gold transition-colors text-center">
-                      {sponsor.name}
+            <div className="flex flex-wrap items-stretch justify-center gap-6">
+              {featuredSponsors.map((sponsor) => {
+                const isGold = sponsor.tier === 'gold'
+                return (
+                  <a
+                    key={sponsor.id}
+                    href={sponsor.website ?? '#'}
+                    target={sponsor.website ? '_blank' : undefined}
+                    rel="noopener noreferrer"
+                    className={`group bg-white/5 hover:bg-white/10 rounded-xl px-10 py-7 flex flex-col items-center gap-4 transition-all duration-300 min-w-[220px] max-w-xs border ${
+                      isGold
+                        ? 'border-cricket-gold/40 hover:border-cricket-gold'
+                        : 'border-gray-400/30 hover:border-gray-300/60'
+                    }`}
+                  >
+                    {sponsor.logoUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={sponsor.logoUrl}
+                        alt={sponsor.name}
+                        className="h-16 w-36 object-contain"
+                      />
+                    ) : (
+                      <span className={`font-bold text-2xl text-center transition-colors ${isGold ? 'text-white group-hover:text-cricket-gold' : 'text-gray-200 group-hover:text-gray-100'}`}>
+                        {sponsor.name}
+                      </span>
+                    )}
+                    <span className={`text-xs font-semibold uppercase tracking-wider rounded-full px-3 py-0.5 border ${
+                      isGold
+                        ? 'text-cricket-gold/70 border-cricket-gold/30'
+                        : 'text-gray-400 border-gray-500/40'
+                    }`}>
+                      {isGold ? 'Gold Partner' : 'Silver Partner'}
                     </span>
-                  )}
-                  <span className="text-xs text-cricket-gold/70 font-semibold uppercase tracking-wider border border-cricket-gold/30 rounded-full px-3 py-0.5">
-                    Gold Partner
-                  </span>
-                </a>
-              ))}
+                  </a>
+                )
+              })}
             </div>
           </div>
         )}
 
-        {/* Silver / Standard Sponsors */}
-        {otherSponsors.length > 0 && (
+        {/* Standard Sponsors */}
+        {standardSponsors.length > 0 && (
           <div>
-            {goldSponsors.length > 0 && (
-              <p className="text-center text-xs font-semibold text-gray-500 uppercase tracking-widest mb-5">
-                Club Sponsors
-              </p>
-            )}
+            <p className="text-center text-xs font-semibold text-gray-500 uppercase tracking-widest mb-5">
+              Club Sponsors
+            </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
-              {otherSponsors.map((sponsor) => (
+              {standardSponsors.map((sponsor) => (
                 <a
                   key={sponsor.id}
                   href={sponsor.website ?? '#'}
