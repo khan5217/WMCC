@@ -147,6 +147,11 @@ export default function MembersLoginPage() {
                 {loading ? 'Checking...' : 'Continue'}
                 <ArrowRight className="h-4 w-4" />
               </button>
+              <div className="text-center">
+                <Link href="/members/forgot-password" className="text-sm text-cricket-green hover:underline">
+                  Forgot your password?
+                </Link>
+              </div>
             </form>
           ) : (
             <form onSubmit={handleOTP} className="space-y-5">
