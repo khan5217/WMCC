@@ -17,6 +17,19 @@ const schema = z.object({
   membershipTier: z.enum(['PLAYING_SENIOR', 'PLAYING_JUNIOR', 'SOCIAL', 'FAMILY', 'LIFE']).optional(),
 })
 
+export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    await prisma.user.delete({ where: { id: params.id } })
+    return NextResponse.json({ ok: true })
+  } catch (err: any) {
+    if (err.code === 'P2025') {
+      return NextResponse.json({ error: 'Member not found' }, { status: 404 })
+    }
+    console.error('Delete member error:', err)
+    return NextResponse.json({ error: 'An error occurred' }, { status: 500 })
+  }
+}
+
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const body = schema.parse(await req.json())
