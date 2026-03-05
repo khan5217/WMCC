@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Save, User, Mail, Phone, Shield, Calendar } from 'lucide-react'
+import { ArrowLeft, Save, User, Mail, Phone, Calendar, Trash2 } from 'lucide-react'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
@@ -36,6 +36,7 @@ export default function ManageMemberPage() {
   const [member, setMember] = useState<Member | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const [role, setRole] = useState('')
   const [membershipStatus, setMembershipStatus] = useState('')
@@ -53,6 +54,19 @@ export default function ManageMemberPage() {
       .catch(() => toast.error('Failed to load member'))
       .finally(() => setLoading(false))
   }, [id])
+
+  const handleDelete = async () => {
+    if (!confirm(`Permanently delete ${member?.firstName} ${member?.lastName}? This cannot be undone.`)) return
+    setDeleting(true)
+    try {
+      await axios.delete(`/api/admin/members/${id}`)
+      toast.success('Member deleted')
+      router.push('/admin/members')
+    } catch (err: any) {
+      toast.error(err.response?.data?.error ?? 'Failed to delete member')
+      setDeleting(false)
+    }
+  }
 
   const handleSave = async () => {
     setSaving(true)
@@ -81,16 +95,26 @@ export default function ManageMemberPage() {
 
   return (
     <div className="p-8 max-w-3xl">
-      <div className="flex items-center gap-4 mb-8">
-        <Link href="/admin/members" className="text-gray-400 hover:text-gray-600">
-          <ArrowLeft className="h-5 w-5" />
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 font-serif">
-            {member.firstName} {member.lastName}
-          </h1>
-          <p className="text-sm text-gray-400 mt-0.5">Member ID: {member.id}</p>
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <Link href="/admin/members" className="text-gray-400 hover:text-gray-600">
+            <ArrowLeft className="h-5 w-5" />
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 font-serif">
+              {member.firstName} {member.lastName}
+            </h1>
+            <p className="text-sm text-gray-400 mt-0.5">Member ID: {member.id}</p>
+          </div>
         </div>
+        <button
+          onClick={handleDelete}
+          disabled={deleting}
+          className="flex items-center gap-2 text-sm text-red-600 hover:text-red-800 border border-red-200 hover:border-red-400 px-3 py-1.5 rounded-lg transition-colors"
+        >
+          <Trash2 className="h-4 w-4" />
+          {deleting ? 'Deleting...' : 'Delete Member'}
+        </button>
       </div>
 
       <div className="space-y-6">
