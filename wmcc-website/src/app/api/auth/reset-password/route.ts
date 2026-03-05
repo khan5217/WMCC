@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hashPassword } from '@/lib/auth'
+import { sendPasswordChangedAlert } from '@/lib/email'
+import crypto from 'crypto'
 import { z } from 'zod'
 
 const schema = z.object({
@@ -15,8 +17,11 @@ export async function POST(req: NextRequest) {
   try {
     const { token, password } = schema.parse(await req.json())
 
+    // Hash the incoming token the same way we stored it
+    const tokenHash = crypto.createHash('sha256').update(token).digest('hex')
+
     const resetToken = await prisma.passwordResetToken.findUnique({
-      where: { token },
+      where: { token: tokenHash },
       include: { user: true },
     })
 
@@ -43,6 +48,11 @@ export async function POST(req: NextRequest) {
         where: { userId: resetToken.userId },
       }),
     ])
+
+    // Alert the user their password was changed — non-blocking
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? req.headers.get('x-real-ip') ?? 'Unknown'
+    const time = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', dateStyle: 'full', timeStyle: 'short' })
+    void sendPasswordChangedAlert(resetToken.user.email, resetToken.user.firstName, { time, ip })
 
     return NextResponse.json({ ok: true })
   } catch (err: any) {

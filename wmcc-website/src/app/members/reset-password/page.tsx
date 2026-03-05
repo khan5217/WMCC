@@ -3,9 +3,18 @@
 import { useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Lock, Eye, EyeOff, CheckCircle } from 'lucide-react'
+import { Lock, Eye, EyeOff, CheckCircle, XCircle } from 'lucide-react'
 import axios from 'axios'
 import toast from 'react-hot-toast'
+
+function strengthRules(password: string) {
+  return [
+    { label: 'At least 8 characters', ok: password.length >= 8 },
+    { label: 'Uppercase letter', ok: /[A-Z]/.test(password) },
+    { label: 'Lowercase letter', ok: /[a-z]/.test(password) },
+    { label: 'Number', ok: /\d/.test(password) },
+  ]
+}
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams()
@@ -28,6 +37,10 @@ function ResetPasswordForm() {
       </div>
     )
   }
+
+  const rules = strengthRules(password)
+  const allRulesMet = rules.every(r => r.ok)
+  const confirmMismatch = confirm.length > 0 && confirm !== password
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -81,21 +94,42 @@ function ResetPasswordForm() {
             {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
           </button>
         </div>
-        <p className="mt-1 text-xs text-gray-400">Must contain uppercase, lowercase, and a number</p>
+
+        {password.length > 0 && (
+          <ul className="mt-2 space-y-1">
+            {rules.map(rule => (
+              <li key={rule.label} className={`flex items-center gap-1.5 text-xs ${rule.ok ? 'text-green-600' : 'text-gray-400'}`}>
+                {rule.ok
+                  ? <CheckCircle className="h-3.5 w-3.5 flex-shrink-0" />
+                  : <XCircle className="h-3.5 w-3.5 flex-shrink-0" />}
+                {rule.label}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
+
       <div>
         <label className="label">Confirm New Password</label>
         <input
           type={showPassword ? 'text' : 'password'}
-          className="input"
+          className={`input ${confirmMismatch ? 'border-red-400 focus:ring-red-300' : ''}`}
           required
           autoComplete="new-password"
           placeholder="Repeat your password"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}
         />
+        {confirmMismatch && (
+          <p className="mt-1 text-xs text-red-500">Passwords do not match</p>
+        )}
       </div>
-      <button type="submit" disabled={loading} className="btn-primary w-full">
+
+      <button
+        type="submit"
+        disabled={loading || !allRulesMet || confirmMismatch}
+        className="btn-primary w-full disabled:opacity-50 disabled:cursor-not-allowed"
+      >
         {loading ? 'Updating...' : 'Reset Password'}
       </button>
     </form>

@@ -15,10 +15,15 @@ export default function ForgotPasswordPage() {
     e.preventDefault()
     setLoading(true)
     try {
-      await axios.post('/api/auth/forgot-password', { email })
+      await axios.post('/api/auth/forgot-password', { email: email.trim() })
       setSent(true)
-    } catch {
-      toast.error('Something went wrong. Please try again.')
+    } catch (err: any) {
+      const status = err.response?.status
+      if (status === 429) {
+        toast.error('Too many attempts. Please wait 15 minutes before trying again.')
+      } else {
+        toast.error('Something went wrong. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
@@ -37,7 +42,7 @@ export default function ForgotPasswordPage() {
           <p className="text-gray-500 mt-2 text-sm">
             {sent
               ? `We've sent a reset link to ${email}`
-              : 'Enter your email and we\'ll send you a reset link'}
+              : "Enter your email and we'll send you a reset link"}
           </p>
         </div>
 
