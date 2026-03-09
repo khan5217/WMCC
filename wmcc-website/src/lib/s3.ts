@@ -45,6 +45,18 @@ export async function getPresignedUrl(key: string, expiresIn = 3600): Promise<st
   )
 }
 
+export async function getPresignedUploadUrl(
+  key: string,
+  contentType: string,
+  expiresIn = 300
+): Promise<string> {
+  return getSignedUrl(
+    s3,
+    new PutObjectCommand({ Bucket: BUCKET, Key: key, ContentType: contentType }),
+    { expiresIn }
+  )
+}
+
 export function getPublicUrl(key: string): string {
   return `${CDN_URL}/${key}`
 }
