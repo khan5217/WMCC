@@ -42,15 +42,30 @@ export default function NewGalleryItemPage() {
     }
     setLoading(true)
     try {
-      const fd = new FormData()
-      fd.append('file', file)
-      fd.append('title', form.title)
-      fd.append('description', form.description)
-      fd.append('mediaType', form.mediaType)
-      fd.append('albumName', form.albumName)
-      fd.append('isFeatured', String(form.isFeatured))
+      // Step 1: get presigned upload URL
+      const { data: { uploadUrl, publicUrl } } = await axios.post('/api/gallery/presign', {
+        filename: file.name,
+        contentType: file.type,
+        mediaType: form.mediaType,
+      })
 
-      await axios.post('/api/gallery', fd)
+      // Step 2: upload directly to S3 (bypasses Vercel payload limit)
+      await fetch(uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: { 'Content-Type': file.type },
+      })
+
+      // Step 3: save metadata
+      await axios.post('/api/gallery', {
+        title: form.title,
+        description: form.description,
+        mediaType: form.mediaType,
+        albumName: form.albumName,
+        isFeatured: form.isFeatured,
+        url: publicUrl,
+      })
+
       toast.success('Media uploaded!')
       router.push('/admin/gallery')
     } catch (err: any) {
