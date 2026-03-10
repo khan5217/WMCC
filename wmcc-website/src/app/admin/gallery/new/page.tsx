@@ -5,14 +5,19 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import { Upload } from 'lucide-react'
+import { Upload, X } from 'lucide-react'
+
+interface FileEntry {
+  file: File
+  preview: string | null
+  status: 'pending' | 'uploading' | 'done' | 'error'
+}
 
 export default function NewGalleryItemPage() {
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
   const [loading, setLoading] = useState(false)
-  const [file, setFile] = useState<File | null>(null)
-  const [preview, setPreview] = useState<string | null>(null)
+  const [entries, setEntries] = useState<FileEntry[]>([])
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -24,56 +29,90 @@ export default function NewGalleryItemPage() {
   const set = (field: string, value: any) => setForm((f) => ({ ...f, [field]: value }))
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0]
-    if (!f) return
-    setFile(f)
-    if (f.type.startsWith('image/')) {
-      setPreview(URL.createObjectURL(f))
-    } else {
-      setPreview(null)
-    }
+    const files = Array.from(e.target.files ?? [])
+    if (!files.length) return
+    const newEntries: FileEntry[] = files.map((f) => ({
+      file: f,
+      preview: f.type.startsWith('image/') ? URL.createObjectURL(f) : null,
+      status: 'pending',
+    }))
+    setEntries((prev) => [...prev, ...newEntries])
+    // reset so the same files can be re-added if needed
+    e.target.value = ''
   }
+
+  const removeEntry = (idx: number) => {
+    setEntries((prev) => {
+      const copy = [...prev]
+      if (copy[idx].preview) URL.revokeObjectURL(copy[idx].preview!)
+      copy.splice(idx, 1)
+      return copy
+    })
+  }
+
+  const updateStatus = (idx: number, status: FileEntry['status']) =>
+    setEntries((prev) => prev.map((e, i) => (i === idx ? { ...e, status } : e)))
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!file) {
-      toast.error('Please select a file')
+    if (!entries.length) {
+      toast.error('Please select at least one file')
       return
     }
     setLoading(true)
-    try {
-      // Step 1: get presigned upload URL
-      const { data: { uploadUrl, publicUrl } } = await axios.post('/api/gallery/presign', {
-        filename: file.name,
-        contentType: file.type,
-        mediaType: form.mediaType,
-      })
+    let successCount = 0
+    let errorCount = 0
 
-      // Step 2: upload directly to S3 (bypasses Vercel payload limit)
-      await fetch(uploadUrl, {
-        method: 'PUT',
-        body: file,
-        headers: { 'Content-Type': file.type },
-      })
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i]
+      if (entry.status === 'done') { successCount++; continue }
+      updateStatus(i, 'uploading')
+      try {
+        const { data: { uploadUrl, publicUrl } } = await axios.post('/api/gallery/presign', {
+          filename: entry.file.name,
+          contentType: entry.file.type,
+          mediaType: form.mediaType,
+        })
 
-      // Step 3: save metadata
-      await axios.post('/api/gallery', {
-        title: form.title,
-        description: form.description,
-        mediaType: form.mediaType,
-        albumName: form.albumName,
-        isFeatured: form.isFeatured,
-        url: publicUrl,
-      })
+        await fetch(uploadUrl, {
+          method: 'PUT',
+          body: entry.file,
+          headers: { 'Content-Type': entry.file.type },
+        })
 
-      toast.success('Media uploaded!')
+        // Use form title for single file; fall back to filename (without extension) for batch
+        const title = entries.length === 1 && form.title
+          ? form.title
+          : (form.title ? `${form.title} – ${entry.file.name.replace(/\.[^/.]+$/, '')}` : entry.file.name.replace(/\.[^/.]+$/, ''))
+
+        await axios.post('/api/gallery', {
+          title,
+          description: form.description,
+          mediaType: form.mediaType,
+          albumName: form.albumName,
+          isFeatured: form.isFeatured,
+          url: publicUrl,
+        })
+
+        updateStatus(i, 'done')
+        successCount++
+      } catch {
+        updateStatus(i, 'error')
+        errorCount++
+      }
+    }
+
+    setLoading(false)
+
+    if (errorCount === 0) {
+      toast.success(`${successCount} file${successCount !== 1 ? 's' : ''} uploaded!`)
       router.push('/admin/gallery')
-    } catch (err: any) {
-      toast.error(err.response?.data?.error ?? 'Failed to upload media')
-    } finally {
-      setLoading(false)
+    } else {
+      toast.error(`${errorCount} file${errorCount !== 1 ? 's' : ''} failed. You can retry.`)
     }
   }
+
+  const pendingCount = entries.filter((e) => e.status !== 'done').length
 
   return (
     <div className="p-8 max-w-2xl">
@@ -97,8 +136,7 @@ export default function NewGalleryItemPage() {
                   checked={form.mediaType === type}
                   onChange={() => {
                     set('mediaType', type)
-                    setFile(null)
-                    setPreview(null)
+                    setEntries([])
                   }}
                 />
                 <span className="text-sm text-gray-700">{type === 'PHOTO' ? 'Photo' : 'Video'}</span>
@@ -109,42 +147,71 @@ export default function NewGalleryItemPage() {
 
         {/* File picker */}
         <div>
-          <label className="label">File *</label>
+          <label className="label">
+            Files * <span className="text-gray-400 font-normal">(select multiple)</span>
+          </label>
           <div
             onClick={() => fileRef.current?.click()}
             className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-cricket-green transition-colors"
           >
-            {preview ? (
-              <img src={preview} alt="preview" className="max-h-40 mx-auto rounded object-contain" />
-            ) : (
-              <div>
-                <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                {file ? (
-                  <p className="text-sm font-medium text-gray-900">{file.name}</p>
-                ) : (
-                  <p className="text-sm text-gray-500">
-                    Click to select {form.mediaType === 'PHOTO' ? 'an image' : 'a video'}
-                  </p>
-                )}
-              </div>
-            )}
+            <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+            <p className="text-sm text-gray-500">
+              Click to select {form.mediaType === 'PHOTO' ? 'images' : 'videos'}
+            </p>
+            <p className="text-xs text-gray-400 mt-1">You can select multiple files at once</p>
           </div>
           <input
             ref={fileRef}
             type="file"
+            multiple
             className="hidden"
             accept={form.mediaType === 'PHOTO' ? 'image/*' : 'video/*'}
             onChange={handleFileChange}
           />
+
+          {/* Selected files list */}
+          {entries.length > 0 && (
+            <ul className="mt-3 space-y-2">
+              {entries.map((entry, idx) => (
+                <li key={idx} className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg">
+                  {entry.preview ? (
+                    <img src={entry.preview} alt="" className="h-10 w-10 rounded object-cover flex-shrink-0" />
+                  ) : (
+                    <div className="h-10 w-10 rounded bg-gray-200 flex items-center justify-center flex-shrink-0">
+                      <span className="text-xs text-gray-500">vid</span>
+                    </div>
+                  )}
+                  <span className="text-sm text-gray-700 flex-1 truncate">{entry.file.name}</span>
+                  <span className={`text-xs font-medium ${
+                    entry.status === 'done' ? 'text-green-600' :
+                    entry.status === 'error' ? 'text-red-500' :
+                    entry.status === 'uploading' ? 'text-blue-500' : 'text-gray-400'
+                  }`}>
+                    {entry.status === 'done' ? '✓ Done' :
+                     entry.status === 'error' ? '✗ Error' :
+                     entry.status === 'uploading' ? 'Uploading…' : 'Pending'}
+                  </span>
+                  {entry.status !== 'uploading' && entry.status !== 'done' && (
+                    <button type="button" onClick={() => removeEntry(idx)} className="text-gray-400 hover:text-red-500">
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         {/* Title */}
         <div>
-          <label className="label">Title *</label>
+          <label className="label">
+            Title {entries.length <= 1 ? '*' : ''}
+            {entries.length > 1 && <span className="text-gray-400 font-normal ml-1">(used as prefix for each file)</span>}
+          </label>
           <input
             type="text"
             className="input"
-            required
+            required={entries.length <= 1}
             placeholder="e.g. WMCC vs Northampton CC - Match Day"
             value={form.title}
             onChange={(e) => set('title', e.target.value)}
@@ -188,8 +255,10 @@ export default function NewGalleryItemPage() {
         </div>
 
         <div className="flex gap-3 pt-2">
-          <button type="submit" disabled={loading || !file} className="btn-primary">
-            {loading ? 'Uploading...' : 'Upload Media'}
+          <button type="submit" disabled={loading || !pendingCount} className="btn-primary">
+            {loading
+              ? `Uploading ${entries.filter((e) => e.status === 'uploading').map((_, i) => i + 1)[0] ?? '…'}/${entries.length}`
+              : `Upload ${pendingCount || entries.length} File${entries.length !== 1 ? 's' : ''}`}
           </button>
           <Link href="/admin/gallery" className="btn-secondary">Cancel</Link>
         </div>
