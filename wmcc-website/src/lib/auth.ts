@@ -58,9 +58,11 @@ export async function getSessionUser() {
 export async function createSession(userId: string): Promise<string> {
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
 
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
+
   const payload: JWTPayload = {
     userId,
-    role: 'MEMBER',
+    role: user?.role ?? 'MEMBER',
     sessionId: crypto.randomUUID(),
   }
 
