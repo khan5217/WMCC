@@ -2,6 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
 import { Plus } from 'lucide-react'
+import { DeleteGalleryButton } from './DeleteGalleryButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,6 +36,7 @@ export default async function AdminGalleryPage() {
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Uploaded By</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Featured</th>
                 <th className="text-left px-5 py-3.5 text-xs font-semibold text-gray-500 uppercase">Date</th>
+                <th className="px-5 py-3.5"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
@@ -74,11 +76,14 @@ export default async function AdminGalleryPage() {
                     )}
                   </td>
                   <td className="px-5 py-3.5 text-gray-400 text-xs">{formatDate(item.createdAt)}</td>
+                  <td className="px-5 py-3.5">
+                    <DeleteGalleryButton id={item.id} title={item.title} />
+                  </td>
                 </tr>
               ))}
               {items.length === 0 && (
                 <tr>
-                  <td colSpan={7} className="px-5 py-10 text-center text-gray-400">No gallery items yet.</td>
+                  <td colSpan={8} className="px-5 py-10 text-center text-gray-400">No gallery items yet.</td>
                 </tr>
               )}
             </tbody>
