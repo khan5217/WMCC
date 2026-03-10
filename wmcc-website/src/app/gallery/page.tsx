@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
-import { formatDate } from '@/lib/utils'
 import { Camera } from 'lucide-react'
+import GalleryGrid from './GalleryGrid'
 
 export const metadata: Metadata = {
   title: 'Gallery',
@@ -43,51 +42,7 @@ export default async function GalleryPage() {
               <p>Check back soon for match photos and club gallery!</p>
             </div>
           ) : (
-            <div className="space-y-14">
-              {Object.entries(albums).map(([albumName, albumItems]) => (
-                <div key={albumName}>
-                  <div className="flex items-center gap-3 mb-6">
-                    <span className="w-1 h-7 bg-cricket-green rounded-full" />
-                    <h2 className="text-xl font-bold text-gray-900">{albumName}</h2>
-                    <span className="text-sm text-gray-400">({albumItems.length} photos)</span>
-                  </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                    {albumItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className="relative aspect-square rounded-xl overflow-hidden bg-gray-100 group cursor-pointer"
-                      >
-                        {item.mediaType === 'VIDEO' ? (
-                          <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
-                            <div className="w-14 h-14 rounded-full bg-white/20 flex items-center justify-center">
-                              <span className="text-white text-2xl">▶</span>
-                            </div>
-                          </div>
-                        ) : (
-                          <Image
-                            src={item.thumbnailUrl ?? item.url}
-                            alt={item.title}
-                            fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-500"
-                          />
-                        )}
-                        {/* Overlay on hover */}
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-end">
-                          <div className="p-3 text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                            {item.title}
-                          </div>
-                        </div>
-                        {item.isFeatured && (
-                          <div className="absolute top-2 right-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-1.5 py-0.5 rounded">
-                            ★
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+            <GalleryGrid albums={albums} />
           )}
         </div>
       </div>
