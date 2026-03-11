@@ -17,7 +17,7 @@ export function Footer() {
               />
               <div>
                 <div className="font-bold text-white text-lg">WMCC</div>
-                <div className="text-xs text-gray-400">Milton Keynes CC</div>
+                <div className="text-xs text-gray-400">Milton Keynes</div>
               </div>
             </div>
             <p className="text-sm text-gray-400 leading-relaxed">

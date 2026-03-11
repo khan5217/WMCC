@@ -107,7 +107,7 @@ export function Navbar() {
             </div>
             <div className="hidden sm:block">
               <div className="font-bold text-gray-900 leading-tight">WMCC</div>
-              <div className="text-xs text-cricket-gold leading-tight font-medium">Milton Keynes CC</div>
+              <div className="text-xs text-cricket-gold leading-tight font-medium">Milton Keynes</div>
             </div>
           </Link>
 
