@@ -77,8 +77,9 @@ export default function GalleryGrid({ albums }: Props) {
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   )}
-                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-300 flex items-end">
-                    <div className="p-3 text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                  {/* Always visible on touch devices, hover-only on desktop */}
+                  <div className="absolute inset-0 bg-black/30 sm:bg-black/0 sm:group-hover:bg-black/40 transition-all duration-300 flex items-end">
+                    <div className="p-2 text-white text-xs font-medium sm:opacity-0 sm:group-hover:opacity-100 transition-opacity line-clamp-2">
                       {item.title}
                     </div>
                   </div>
@@ -103,24 +104,24 @@ export default function GalleryGrid({ albums }: Props) {
           {/* Close */}
           <button
             onClick={close}
-            className="absolute top-4 right-4 text-white/70 hover:text-white z-10 p-2"
+            className="absolute top-3 right-3 text-white/70 hover:text-white active:text-white z-10 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center"
           >
-            <X className="h-7 w-7" />
+            <X className="h-6 w-6" />
           </button>
 
           {/* Prev */}
           {allItems.length > 1 && (
             <button
               onClick={(e) => { e.stopPropagation(); go(-1) }}
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white z-10 p-2"
+              className="absolute left-1 sm:left-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white active:text-white z-10 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
-              <ChevronLeft className="h-9 w-9" />
+              <ChevronLeft className="h-7 w-7 sm:h-9 sm:w-9" />
             </button>
           )}
 
           {/* Image / Video */}
           <div
-            className="relative max-w-5xl max-h-[85vh] w-full mx-16"
+            className="relative max-w-5xl max-h-[85vh] w-full mx-12 sm:mx-16"
             onClick={(e) => e.stopPropagation()}
           >
             {lightbox.item.mediaType === 'VIDEO' ? (
@@ -154,9 +155,9 @@ export default function GalleryGrid({ albums }: Props) {
           {allItems.length > 1 && (
             <button
               onClick={(e) => { e.stopPropagation(); go(1) }}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white z-10 p-2"
+              className="absolute right-1 sm:right-3 top-1/2 -translate-y-1/2 text-white/70 hover:text-white active:text-white z-10 p-3 min-w-[44px] min-h-[44px] flex items-center justify-center"
             >
-              <ChevronRight className="h-9 w-9" />
+              <ChevronRight className="h-7 w-7 sm:h-9 sm:w-9" />
             </button>
           )}
         </div>

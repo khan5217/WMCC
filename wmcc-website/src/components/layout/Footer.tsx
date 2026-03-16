@@ -6,7 +6,7 @@ export function Footer() {
     <footer className="bg-gray-900 text-gray-300">
       {/* Main footer */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
           {/* Club info */}
           <div>
             <div className="flex items-center gap-3 mb-4">
@@ -24,17 +24,17 @@ export function Footer() {
               WMCC Milton Keynes Cricket Club — a proud community cricket club established in 2020,
               nurturing talent and celebrating the sport in Milton Keynes.
             </p>
-            <div className="flex gap-3 mt-5">
-              <a href="#" className="w-8 h-8 bg-gray-800 hover:bg-cricket-green rounded-full flex items-center justify-center transition-colors" aria-label="Facebook">
+            <div className="flex gap-2 mt-5">
+              <a href="#" className="w-11 h-11 bg-gray-800 hover:bg-cricket-green rounded-full flex items-center justify-center transition-colors" aria-label="Facebook">
                 <Facebook className="h-4 w-4" />
               </a>
-              <a href="#" className="w-8 h-8 bg-gray-800 hover:bg-cricket-green rounded-full flex items-center justify-center transition-colors" aria-label="Twitter">
+              <a href="#" className="w-11 h-11 bg-gray-800 hover:bg-cricket-green rounded-full flex items-center justify-center transition-colors" aria-label="Twitter">
                 <Twitter className="h-4 w-4" />
               </a>
-              <a href="#" className="w-8 h-8 bg-gray-800 hover:bg-cricket-green rounded-full flex items-center justify-center transition-colors" aria-label="Instagram">
+              <a href="#" className="w-11 h-11 bg-gray-800 hover:bg-cricket-green rounded-full flex items-center justify-center transition-colors" aria-label="Instagram">
                 <Instagram className="h-4 w-4" />
               </a>
-              <a href="#" className="w-8 h-8 bg-gray-800 hover:bg-cricket-green rounded-full flex items-center justify-center transition-colors" aria-label="YouTube">
+              <a href="#" className="w-11 h-11 bg-gray-800 hover:bg-cricket-green rounded-full flex items-center justify-center transition-colors" aria-label="YouTube">
                 <Youtube className="h-4 w-4" />
               </a>
             </div>
@@ -131,9 +131,9 @@ export function Footer() {
             © {new Date().getFullYear()} WMCC Milton Keynes Cricket Club. All rights reserved.
           </p>
           <div className="flex gap-4">
-            <Link href="/privacy" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">Terms of Use</Link>
-            <Link href="/safeguarding" className="text-xs text-gray-500 hover:text-gray-300 transition-colors">Safeguarding</Link>
+            <Link href="/privacy" className="text-sm text-gray-500 hover:text-gray-300 transition-colors py-1">Privacy Policy</Link>
+            <Link href="/terms" className="text-sm text-gray-500 hover:text-gray-300 transition-colors py-1">Terms of Use</Link>
+            <Link href="/safeguarding" className="text-sm text-gray-500 hover:text-gray-300 transition-colors py-1">Safeguarding</Link>
           </div>
         </div>
       </div>
