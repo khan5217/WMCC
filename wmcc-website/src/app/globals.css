@@ -39,27 +39,27 @@ body {
 @layer components {
   /* Buttons */
   .btn-primary {
-    @apply bg-cricket-green text-white font-semibold py-3 px-6 rounded-lg
-           hover:bg-cricket-dark transition-all duration-200
+    @apply bg-cricket-green text-white font-semibold py-2.5 px-5 md:py-3 md:px-6 rounded-lg
+           hover:bg-cricket-dark active:bg-cricket-dark transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-cricket-green focus:ring-offset-2
-           shadow-green hover:shadow-lg inline-flex items-center;
+           shadow-green hover:shadow-lg inline-flex items-center min-h-[44px];
   }
   .btn-gold {
-    @apply bg-cricket-gold text-gray-900 font-semibold py-3 px-6 rounded-lg
-           hover:bg-cricket-gold-dark transition-all duration-200
+    @apply bg-cricket-gold text-gray-900 font-semibold py-2.5 px-5 md:py-3 md:px-6 rounded-lg
+           hover:bg-cricket-gold-dark active:bg-cricket-gold-dark transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-cricket-gold focus:ring-offset-2
-           shadow-gold hover:shadow-lg inline-flex items-center;
+           shadow-gold hover:shadow-lg inline-flex items-center min-h-[44px];
   }
   .btn-secondary {
-    @apply bg-white text-cricket-green font-semibold py-3 px-6 rounded-lg border-2
-           border-cricket-green hover:bg-green-50 transition-all duration-200
+    @apply bg-white text-cricket-green font-semibold py-2.5 px-5 md:py-3 md:px-6 rounded-lg border-2
+           border-cricket-green hover:bg-green-50 active:bg-green-50 transition-all duration-200
            focus:outline-none focus:ring-2 focus:ring-cricket-green focus:ring-offset-2
-           inline-flex items-center;
+           inline-flex items-center min-h-[44px];
   }
   .btn-outline-white {
-    @apply border-2 border-white text-white font-semibold py-3 px-6 rounded-lg
-           hover:bg-white hover:text-cricket-green transition-all duration-200
-           inline-flex items-center;
+    @apply border-2 border-white text-white font-semibold py-2.5 px-5 md:py-3 md:px-6 rounded-lg
+           hover:bg-white hover:text-cricket-green active:bg-white active:text-cricket-green transition-all duration-200
+           inline-flex items-center min-h-[44px];
   }
 
   /* Cards */
@@ -72,7 +72,7 @@ body {
 
   /* Section */
   .section-padding {
-    @apply py-16 px-4 sm:px-6 lg:px-8;
+    @apply py-10 px-4 sm:px-6 md:py-16 lg:px-8;
   }
   .container-max {
     @apply max-w-7xl mx-auto;
@@ -92,9 +92,10 @@ body {
 
   /* Form inputs */
   .input {
-    @apply w-full px-4 py-3 rounded-lg border border-gray-300
+    @apply w-full px-3 py-2.5 md:px-4 md:py-3 rounded-lg border border-gray-300
            focus:outline-none focus:ring-2 focus:ring-cricket-green focus:border-transparent
-           text-gray-900 placeholder-gray-400 bg-white transition-all duration-200;
+           text-gray-900 placeholder-gray-400 bg-white transition-all duration-200
+           text-base;
   }
   .input-error {
     @apply border-red-400 focus:ring-red-400;
@@ -124,7 +125,7 @@ body {
 
   /* Stats */
   .stat-card {
-    @apply text-center p-6 rounded-xl bg-white shadow-card;
+    @apply text-center p-4 md:p-6 rounded-xl bg-white shadow-card;
   }
   .stat-value {
     @apply text-3xl md:text-4xl font-bold text-cricket-green font-serif;

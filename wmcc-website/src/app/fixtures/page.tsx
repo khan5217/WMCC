@@ -106,48 +106,85 @@ export default async function FixturesPage() {
                 <p>No results yet</p>
               </div>
             ) : (
-              <div className="overflow-x-auto rounded-xl border border-gray-100">
-                <table className="w-full text-sm">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Match</th>
-                      <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Venue</th>
-                      <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">WMCC</th>
-                      <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Opp.</th>
-                      <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Result</th>
-                      <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Card</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-50">
-                    {past.map((match) => {
-                      const res = match.result ? resultMap[match.result] : null
-                      return (
-                        <tr key={match.id} className="hover:bg-gray-50 transition-colors">
-                          <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
-                            {formatDate(match.date, 'dd MMM')}
-                          </td>
-                          <td className="px-4 py-3">
-                            <div className="font-medium text-gray-900">{match.team.name} {match.isHome ? 'vs' : '@'} {match.opposition}</div>
-                            <div className="text-xs text-gray-400">{formatLabels[match.format]}</div>
-                          </td>
-                          <td className="px-4 py-3 text-gray-500 hidden md:table-cell text-xs">{match.venue}</td>
-                          <td className="px-4 py-3 text-center font-semibold text-gray-900">{match.wmccScore ?? '—'}</td>
-                          <td className="px-4 py-3 text-center text-gray-600">{match.oppositionScore ?? '—'}</td>
-                          <td className="px-4 py-3 text-center">
-                            {res ? <span className={cn('inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold', res.cls)}>{res.label}</span> : '—'}
-                          </td>
-                          <td className="px-4 py-3 text-center">
-                            <Link href={`/scorecards/${match.id}`} className="text-xs text-cricket-green hover:underline font-medium">
-                              View →
-                            </Link>
-                          </td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
+              <>
+                {/* Mobile: card list */}
+                <div className="md:hidden space-y-3">
+                  {past.map((match) => {
+                    const res = match.result ? resultMap[match.result] : null
+                    return (
+                      <div key={match.id} className="card p-4 border-l-4 border-gray-200">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-gray-900 text-sm leading-snug">
+                              {match.team.name} {match.isHome ? 'vs' : '@'} {match.opposition}
+                            </div>
+                            <div className="text-xs text-gray-400 mt-0.5">
+                              {formatDate(match.date, 'dd MMM yyyy')} · {formatLabels[match.format] ?? match.format}
+                            </div>
+                          </div>
+                          {res && (
+                            <span className={cn('inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold shrink-0', res.cls)}>
+                              {res.label}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center justify-between text-sm">
+                          <div className="text-gray-500 text-xs">
+                            {match.wmccScore ? <span><span className="font-semibold text-gray-900">{match.wmccScore}</span> vs {match.oppositionScore ?? '—'}</span> : '—'}
+                          </div>
+                          <Link href={`/scorecards/${match.id}`} className="text-xs text-cricket-green font-medium hover:underline py-1 px-2 -mr-2">
+                            View Scorecard →
+                          </Link>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Desktop: table */}
+                <div className="hidden md:block overflow-x-auto rounded-xl border border-gray-100">
+                  <table className="w-full text-sm">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Date</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Match</th>
+                        <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Venue</th>
+                        <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">WMCC</th>
+                        <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Opp.</th>
+                        <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Result</th>
+                        <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Card</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-50">
+                      {past.map((match) => {
+                        const res = match.result ? resultMap[match.result] : null
+                        return (
+                          <tr key={match.id} className="hover:bg-gray-50 transition-colors">
+                            <td className="px-4 py-3 text-gray-500 text-xs whitespace-nowrap">
+                              {formatDate(match.date, 'dd MMM')}
+                            </td>
+                            <td className="px-4 py-3">
+                              <div className="font-medium text-gray-900">{match.team.name} {match.isHome ? 'vs' : '@'} {match.opposition}</div>
+                              <div className="text-xs text-gray-400">{formatLabels[match.format]}</div>
+                            </td>
+                            <td className="px-4 py-3 text-gray-500 hidden md:table-cell text-xs">{match.venue}</td>
+                            <td className="px-4 py-3 text-center font-semibold text-gray-900">{match.wmccScore ?? '—'}</td>
+                            <td className="px-4 py-3 text-center text-gray-600">{match.oppositionScore ?? '—'}</td>
+                            <td className="px-4 py-3 text-center">
+                              {res ? <span className={cn('inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold', res.cls)}>{res.label}</span> : '—'}
+                            </td>
+                            <td className="px-4 py-3 text-center">
+                              <Link href={`/scorecards/${match.id}`} className="text-xs text-cricket-green hover:underline font-medium">
+                                View →
+                              </Link>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             )}
           </div>
         </div>

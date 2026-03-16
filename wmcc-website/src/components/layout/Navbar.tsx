@@ -201,7 +201,7 @@ export function Navbar() {
 
           {/* Mobile menu button */}
           <button
-            className="lg:hidden p-2 rounded-md text-gray-700 hover:bg-green-50 hover:text-cricket-green"
+            className="lg:hidden p-3 rounded-md text-gray-700 hover:bg-green-50 hover:text-cricket-green min-w-[44px] min-h-[44px] flex items-center justify-center"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Toggle menu"
           >
@@ -236,31 +236,31 @@ export function Navbar() {
                   key={link.href}
                   href={link.href!}
                   className={cn(
-                    'block px-3 py-2 rounded-md text-gray-700 hover:bg-green-50 hover:text-cricket-green',
+                    'block px-3 py-3 rounded-md text-gray-700 hover:bg-green-50 hover:text-cricket-green min-h-[44px] flex items-center',
                     pathname === link.href && 'text-cricket-green font-medium bg-green-50'
                   )}
                   onClick={() => setMobileOpen(false)}
                 >
-                  {link.label}
+                  <span>{link.label}</span>
                 </Link>
               )
             )}
             <div className="pt-4 border-t border-gray-100 space-y-2">
               {user ? (
                 <>
-                  <Link href="/members" className="block px-3 py-2 text-gray-700 hover:bg-green-50 rounded-md" onClick={() => setMobileOpen(false)}>
+                  <Link href="/members" className="block px-3 py-3 text-gray-700 hover:bg-green-50 rounded-md min-h-[44px] flex items-center" onClick={() => setMobileOpen(false)}>
                     My Profile
                   </Link>
-                  <button onClick={() => { handleLogout(); setMobileOpen(false) }} className="block w-full text-left px-3 py-2 text-red-600 hover:bg-red-50 rounded-md">
+                  <button onClick={() => { handleLogout(); setMobileOpen(false) }} className="block w-full text-left px-3 py-3 text-red-600 hover:bg-red-50 rounded-md min-h-[44px]">
                     Sign Out
                   </button>
                 </>
               ) : (
                 <>
-                  <Link href="/members/login" className="block px-3 py-2 text-center border border-cricket-green text-cricket-green rounded-lg font-medium" onClick={() => setMobileOpen(false)}>
+                  <Link href="/members/login" className="block px-3 py-3 text-center border border-cricket-green text-cricket-green rounded-lg font-medium min-h-[44px] flex items-center justify-center" onClick={() => setMobileOpen(false)}>
                     Members Login
                   </Link>
-                  <Link href="/membership" className="block px-3 py-2 text-center bg-cricket-green text-white rounded-lg font-medium" onClick={() => setMobileOpen(false)}>
+                  <Link href="/membership" className="block px-3 py-3 text-center bg-cricket-green text-white rounded-lg font-medium min-h-[44px] flex items-center justify-center" onClick={() => setMobileOpen(false)}>
                     Join the Club
                   </Link>
                 </>

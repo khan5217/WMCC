@@ -111,7 +111,7 @@ export default function MembershipPage() {
                     <div
                       key={plan.id}
                       onClick={() => setSelected(plan.id)}
-                      className={`card p-8 cursor-pointer border-2 transition-all relative
+                      className={`card p-6 md:p-8 cursor-pointer border-2 transition-all relative
                         ${isSelected ? `${plan.color} shadow-xl` : 'border-gray-100 hover:border-gray-300'}
                       `}
                     >
@@ -154,7 +154,7 @@ export default function MembershipPage() {
               </div>
 
               <div className="text-center">
-                <button onClick={() => setStep('register')} className="btn-primary text-lg px-10 py-4">
+                <button onClick={() => setStep('register')} className="btn-primary w-full sm:w-auto text-base sm:text-lg sm:px-10 sm:py-4 justify-center">
                   Continue with {selectedPlan.name} →
                 </button>
                 <p className="text-sm text-gray-400 mt-3">
@@ -177,10 +177,10 @@ export default function MembershipPage() {
                 <div className="text-2xl font-bold text-cricket-green">{selectedPlan.price}</div>
               </div>
 
-              <div className="card p-8">
+              <div className="card p-5 md:p-8">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">Your Details</h2>
                 <form onSubmit={handleRegister} className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="label">First Name *</label>
                       <input className="input" type="text" required value={form.firstName}

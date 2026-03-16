@@ -34,7 +34,7 @@ export default function ContactPage() {
 
       <div className="section-padding bg-white">
         <div className="container-max">
-          <div className="grid grid-cols-1 lg:grid-cols-5 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
             {/* Contact info */}
             <div className="lg:col-span-2 space-y-8">
               <div>
@@ -75,9 +75,9 @@ export default function ContactPage() {
                     <div className="font-semibold text-gray-900 mb-0.5">{title}</div>
                     {lines.map((line, i) => (
                       href && i === 0 ? (
-                        <a key={line} href={href} className="text-gray-600 hover:text-cricket-green block text-sm">{line}</a>
+                        <a key={line} href={href} className="text-gray-600 hover:text-cricket-green block text-base leading-relaxed py-0.5">{line}</a>
                       ) : (
-                        <div key={line} className="text-gray-600 text-sm">{line}</div>
+                        <div key={line} className="text-gray-600 text-base leading-relaxed">{line}</div>
                       )
                     ))}
                   </div>
@@ -87,7 +87,7 @@ export default function ContactPage() {
 
             {/* Contact form */}
             <div className="lg:col-span-3">
-              <div className="card p-8">
+              <div className="card p-5 md:p-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-6">Send us a message</h3>
                 <form onSubmit={handleSubmit} className="space-y-5">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -146,7 +146,7 @@ export default function ContactPage() {
                   <div>
                     <label className="label">Message *</label>
                     <textarea
-                      className="input h-36 resize-none"
+                      className="input h-36 resize-vertical"
                       required
                       placeholder="How can we help you?"
                       value={form.message}
