@@ -17,7 +17,7 @@ interface Match {
 export function HeroSection({ upcomingMatch }: { upcomingMatch?: Match }) {
   return (
     <section
-      className="min-h-[85vh] flex items-center relative overflow-hidden pt-24"
+      className="min-h-[100svh] md:min-h-[85vh] flex items-center relative overflow-hidden pt-24"
       style={{
         backgroundImage: 'url(https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=2560&q=80)',
         backgroundSize: 'cover',
@@ -29,14 +29,14 @@ export function HeroSection({ upcomingMatch }: { upcomingMatch?: Match }) {
       {/* Subtle gold vignette at bottom */}
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/60 to-transparent" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-20 relative z-10">
         <div className="max-w-3xl">
           {/* Badge */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-sm font-medium px-4 py-2 rounded-full mb-6"
+            className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs sm:text-sm font-medium px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 md:mb-6"
           >
             <Trophy className="h-4 w-4 text-yellow-400" />
             Est. 2020 — Proud Members of South Northants League
@@ -47,7 +47,7 @@ export function HeroSection({ upcomingMatch }: { upcomingMatch?: Match }) {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-5xl md:text-7xl font-bold text-white font-serif leading-tight mb-6"
+            className="text-4xl sm:text-5xl md:text-7xl font-bold text-white font-serif leading-tight mb-3 md:mb-6"
           >
             Welcome to
             <br />
@@ -60,7 +60,7 @@ export function HeroSection({ upcomingMatch }: { upcomingMatch?: Match }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl text-green-100 mb-10 max-w-xl leading-relaxed"
+            className="text-base md:text-xl text-green-100 mb-6 md:mb-10 max-w-xl leading-relaxed"
           >
             Milton Keynes&apos; premier cricket club. From grassroots to competitive league cricket —
             everyone is welcome at WMCC.
@@ -87,7 +87,7 @@ export function HeroSection({ upcomingMatch }: { upcomingMatch?: Match }) {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="mt-12 inline-block bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-5"
+              className="mt-6 md:mt-12 inline-block bg-white/10 backdrop-blur-md border border-white/20 rounded-xl p-4 md:p-5"
             >
               <div className="text-xs text-green-300 font-semibold uppercase tracking-wider mb-2">
                 🏏 Next Match
