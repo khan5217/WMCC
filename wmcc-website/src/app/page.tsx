@@ -18,13 +18,13 @@ async function getHomeData() {
       take: 5,
     }),
     prisma.match.findMany({
-      where: { result: null, date: { gte: new Date() }, isFeatured: true },
+      where: { result: null, date: { gte: new Date() } },
       include: { team: true },
       orderBy: { date: 'asc' },
       take: 5,
     }),
     prisma.match.findFirst({
-      where: { result: null, date: { gte: new Date() } },
+      where: { result: null, date: { gte: new Date() }, isFeatured: true },
       include: { team: true },
       orderBy: { date: 'asc' },
     }),
