@@ -1,38 +1,75 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import { Plus } from 'lucide-react'
+import { Plus, ExternalLink } from 'lucide-react'
 import { DeleteSponsorButton } from './DeleteSponsorButton'
 
 export const dynamic = 'force-dynamic'
+
+const tierLabel: Record<string, string> = {
+  gold: 'Gold',
+  silver: 'Silver',
+  standard: 'Standard',
+}
+
+const tierColor: Record<string, string> = {
+  gold: 'bg-yellow-100 text-yellow-800',
+  silver: 'bg-gray-200 text-gray-700',
+  standard: 'bg-blue-50 text-blue-700',
+}
 
 export default async function AdminSponsorsPage() {
   const sponsors = await prisma.sponsor.findMany({
     orderBy: [{ tier: 'asc' }, { name: 'asc' }],
   })
 
-  const tierLabel: Record<string, string> = {
-    gold: 'Gold',
-    silver: 'Silver',
-    standard: 'Standard',
-  }
-
-  const tierColor: Record<string, string> = {
-    gold: 'bg-yellow-100 text-yellow-800',
-    silver: 'bg-gray-200 text-gray-700',
-    standard: 'bg-blue-50 text-blue-700',
-  }
-
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 font-serif">Sponsors</h1>
+    <div className="p-4 md:p-8">
+      <div className="flex items-center justify-between mb-6 gap-3">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 font-serif">Sponsors</h1>
         <Link href="/admin/sponsors/new" className="btn-primary flex items-center gap-2 text-sm">
           <Plus className="h-4 w-4" /> Add Sponsor
         </Link>
       </div>
 
       <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-gray-100">
+          {sponsors.length === 0 && (
+            <p className="px-4 py-10 text-center text-gray-400 text-sm">No sponsors yet.</p>
+          )}
+          {sponsors.map((sponsor) => (
+            <div key={sponsor.id} className="p-4 flex items-center gap-3">
+              {sponsor.logoUrl ? (
+                <img src={sponsor.logoUrl} alt={sponsor.name} className="w-12 h-12 object-contain rounded-lg bg-gray-50 shrink-0" />
+              ) : (
+                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 text-xs shrink-0 font-bold">
+                  {sponsor.name.charAt(0)}
+                </div>
+              )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-semibold text-gray-900 text-sm">{sponsor.name}</span>
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${tierColor[sponsor.tier] ?? 'bg-gray-100 text-gray-600'}`}>
+                    {tierLabel[sponsor.tier] ?? sponsor.tier}
+                  </span>
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${sponsor.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-500'}`}>
+                    {sponsor.isActive ? 'Active' : 'Inactive'}
+                  </span>
+                </div>
+                {sponsor.website && (
+                  <a href={sponsor.website} target="_blank" rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-xs text-cricket-green hover:underline mt-1">
+                    <ExternalLink className="h-3 w-3" /> Website
+                  </a>
+                )}
+              </div>
+              <DeleteSponsorButton id={sponsor.id} name={sponsor.name} />
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>

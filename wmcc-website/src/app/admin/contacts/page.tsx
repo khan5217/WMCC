@@ -12,19 +12,49 @@ export default async function AdminContactsPage() {
   const unread = messages.filter((m) => !m.isRead).length
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
+    <div className="p-4 md:p-8">
+      <div className="flex items-center justify-between mb-6 gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 font-serif">Contact Messages</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 font-serif">Contact Messages</h1>
           {unread > 0 && (
             <p className="text-sm text-red-500 mt-1">{unread} unread message{unread !== 1 ? 's' : ''}</p>
           )}
         </div>
-        <div className="text-sm text-gray-500">{messages.length} total messages</div>
+        <div className="text-sm text-gray-500">{messages.length} total</div>
       </div>
 
       <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-gray-100">
+          {messages.length === 0 && (
+            <p className="px-4 py-10 text-center text-gray-400 text-sm">No contact messages yet.</p>
+          )}
+          {messages.map((msg) => (
+            <Link
+              key={msg.id}
+              href={`/admin/contacts/${msg.id}`}
+              className={`block p-4 hover:bg-gray-50 transition-colors ${!msg.isRead ? 'bg-blue-50/40' : ''}`}
+            >
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className={`font-semibold text-sm ${!msg.isRead ? 'text-gray-900' : 'text-gray-600'}`}>
+                    {msg.name}
+                  </span>
+                  {!msg.isRead && (
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-100 text-red-700">Unread</span>
+                  )}
+                </div>
+                <span className="text-xs text-gray-400 shrink-0">{formatDate(msg.createdAt)}</span>
+              </div>
+              <div className="text-xs text-gray-500">{msg.email}</div>
+              <div className="text-sm font-medium text-gray-700 mt-1">{msg.subject}</div>
+              <div className="text-xs text-gray-400 mt-0.5 line-clamp-2">{msg.message}</div>
+            </Link>
+          ))}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
