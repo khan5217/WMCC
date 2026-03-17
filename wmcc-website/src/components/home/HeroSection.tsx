@@ -17,7 +17,7 @@ interface Match {
 export function HeroSection({ upcomingMatch }: { upcomingMatch?: Match }) {
   return (
     <section
-      className="h-[100svh] md:min-h-[85vh] md:h-auto flex flex-col md:flex-row md:items-center relative overflow-hidden pt-24"
+      className="h-[100svh] md:min-h-[85vh] md:h-[85vh] flex flex-col md:flex-row md:items-center relative overflow-hidden pt-24"
       style={{
         backgroundImage: 'url(https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=2560&q=80)',
         backgroundSize: 'cover',
@@ -47,7 +47,7 @@ export function HeroSection({ upcomingMatch }: { upcomingMatch?: Match }) {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-4xl sm:text-5xl md:text-7xl font-bold text-white font-serif leading-tight mb-3 md:mb-6"
+            className="text-5xl sm:text-5xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white font-serif leading-tight mb-3 md:mb-6"
           >
             Welcome to
             <br />
@@ -60,7 +60,7 @@ export function HeroSection({ upcomingMatch }: { upcomingMatch?: Match }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-base md:text-xl text-green-100 mb-6 md:mb-10 max-w-xl leading-relaxed"
+            className="text-sm sm:text-base md:text-lg lg:text-xl text-green-100 mb-6 md:mb-10 max-w-xl leading-relaxed"
           >
             Milton Keynes&apos; premier cricket club. From grassroots to competitive league cricket —
             everyone is welcome at WMCC.
