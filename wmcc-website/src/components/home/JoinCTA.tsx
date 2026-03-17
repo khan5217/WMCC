@@ -1,7 +1,19 @@
+'use client'
+
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 import { ChevronRight, Users, Star, Shield } from 'lucide-react'
+import axios from 'axios'
 
 export function JoinCTA() {
+  const [loggedIn, setLoggedIn] = useState(false)
+
+  useEffect(() => {
+    axios.get('/api/auth/me').then(() => setLoggedIn(true)).catch(() => setLoggedIn(false))
+  }, [])
+
+  if (loggedIn) return null
+
   return (
     <section className="hero-gradient py-20 relative overflow-hidden">
       <div className="absolute inset-0 opacity-10">

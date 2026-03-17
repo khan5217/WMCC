@@ -1,11 +1,19 @@
 'use client'
 
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 import { usePathname } from 'next/navigation'
 import { Mail, Phone, MapPin, Facebook, Twitter, Instagram, Youtube } from 'lucide-react'
+import axios from 'axios'
 
 export function Footer() {
   const pathname = usePathname()
+  const [loggedIn, setLoggedIn] = useState(false)
+
+  useEffect(() => {
+    axios.get('/api/auth/me').then(() => setLoggedIn(true)).catch(() => setLoggedIn(false))
+  }, [pathname])
+
   if (pathname.startsWith('/admin')) return null
 
   return (
@@ -76,11 +84,11 @@ export function Footer() {
             <h3 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">Members Area</h3>
             <ul className="space-y-2.5">
               {[
-                { href: '/members/login', label: 'Members Login' },
-                { href: '/membership', label: 'Join the Club' },
-                { href: '/members/documents', label: 'Private Documents' },
-                { href: '/members/profile', label: 'My Profile' },
-              ].map((link) => (
+                !loggedIn && { href: '/members/login', label: 'Members Login' },
+                !loggedIn && { href: '/membership', label: 'Join the Club' },
+                loggedIn && { href: '/members/documents', label: 'Private Documents' },
+                loggedIn && { href: '/members/profile', label: 'My Profile' },
+              ].filter(Boolean).map((link: any) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
@@ -91,14 +99,16 @@ export function Footer() {
                 </li>
               ))}
             </ul>
-            <div className="mt-6">
-              <Link
-                href="/membership"
-                className="inline-block bg-cricket-green hover:bg-cricket-dark text-white text-sm font-semibold py-2.5 px-5 rounded-lg transition-colors"
-              >
-                Join the Club →
-              </Link>
-            </div>
+            {!loggedIn && (
+              <div className="mt-6">
+                <Link
+                  href="/membership"
+                  className="inline-block bg-cricket-green hover:bg-cricket-dark text-white text-sm font-semibold py-2.5 px-5 rounded-lg transition-colors"
+                >
+                  Join the Club →
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Contact */}
