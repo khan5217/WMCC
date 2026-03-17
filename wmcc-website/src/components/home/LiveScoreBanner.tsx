@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { Radio } from 'lucide-react'
 
 type LiveMatch = {
@@ -12,6 +13,7 @@ type LiveMatch = {
 }
 
 export function LiveScoreBanner() {
+  const pathname = usePathname()
   const [matches, setMatches] = useState<LiveMatch[]>([])
 
   const poll = () => {
@@ -27,7 +29,7 @@ export function LiveScoreBanner() {
     return () => clearInterval(interval)
   }, [])
 
-  if (matches.length === 0) return null
+  if (pathname.startsWith('/admin') || matches.length === 0) return null
 
   return (
     <div className="bg-red-600 text-white">
