@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hashPassword } from '@/lib/auth'
 import { sendOTP } from '@/lib/twilio'
-import { sendWelcomeEmail } from '@/lib/email'
+import { sendWelcomeEmail, sendNewMemberAlert } from '@/lib/email'
 import { z } from 'zod'
 
 const registerSchema = z.object({
@@ -50,6 +50,9 @@ export async function POST(req: NextRequest) {
 
     // Send welcome email (non-blocking)
     void sendWelcomeEmail(user.email, user.firstName, user.membershipTier ?? data.membershipTier)
+
+    // Alert admin of new registration (non-blocking)
+    void sendNewMemberAlert(user.firstName, user.lastName, user.email, user.phone, user.membershipTier ?? data.membershipTier)
 
     // Send OTP to verify phone
     const otpResult = await sendOTP(user.id, user.phone)

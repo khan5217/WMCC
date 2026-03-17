@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendNewContactAlert } from '@/lib/email'
 import { z } from 'zod'
 
 const schema = z.object({
@@ -16,6 +17,8 @@ export async function POST(req: NextRequest) {
     const data = schema.parse(body)
 
     await prisma.contactMessage.create({ data })
+
+    void sendNewContactAlert(data.name, data.email, data.phone, data.subject, data.message)
 
     return NextResponse.json({ success: true })
   } catch (error: any) {
