@@ -128,7 +128,7 @@ export default async function MembersDashboardPage() {
                 {[
                   { href: '/members/profile', icon: User, label: 'Edit Profile' },
                   { href: '/members/documents', icon: FileText, label: 'Private Documents' },
-                  { href: '/membership', icon: CreditCard, label: 'Renew Membership' },
+                  { href: '/membership/renew', icon: CreditCard, label: 'Renew Membership' },
                   ...(user.role === 'ADMIN' || user.role === 'COMMITTEE'
                     ? [{ href: '/admin', icon: Shield, label: 'Admin Panel' }]
                     : []),

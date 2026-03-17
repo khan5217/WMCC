@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
-import { Upload } from 'lucide-react'
+import { Upload, FileText } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,16 +25,47 @@ export default async function AdminDocumentsPage() {
   })
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 font-serif">Documents</h1>
+    <div className="p-4 md:p-8">
+      <div className="flex items-center justify-between mb-6 gap-3">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 font-serif">Documents</h1>
         <Link href="/admin/documents/new" className="btn-primary flex items-center gap-2 text-sm">
           <Upload className="h-4 w-4" /> Upload Document
         </Link>
       </div>
 
       <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-gray-100">
+          {documents.length === 0 && (
+            <p className="px-4 py-10 text-center text-gray-400 text-sm">No documents uploaded yet.</p>
+          )}
+          {documents.map((doc) => (
+            <div key={doc.id} className="p-4 flex items-start gap-3">
+              <div className="w-9 h-9 bg-gray-100 rounded-lg flex items-center justify-center shrink-0">
+                <FileText className="h-4 w-4 text-gray-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-semibold text-gray-900 text-sm">{doc.title}</div>
+                {doc.description && (
+                  <div className="text-xs text-gray-400 mt-0.5 line-clamp-1">{doc.description}</div>
+                )}
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${accessColors[doc.access]}`}>
+                    {doc.access.replace(/_/g, ' ')}
+                  </span>
+                  <span className="text-xs text-gray-500">{doc.category}</span>
+                  <span className="text-xs text-gray-400">{formatBytes(doc.fileSize)}</span>
+                </div>
+                <div className="text-xs text-gray-400 mt-1">
+                  {doc.uploadedBy.firstName} {doc.uploadedBy.lastName} · {formatDate(doc.createdAt)}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
