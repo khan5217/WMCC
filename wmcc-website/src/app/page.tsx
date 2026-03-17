@@ -10,7 +10,7 @@ import { prisma } from '@/lib/prisma'
 export const dynamic = 'force-dynamic'
 
 async function getHomeData() {
-  const [recentMatches, upcomingMatches, featuredNews, sponsors] = await Promise.all([
+  const [recentMatches, upcomingMatches, nextMatch, featuredNews, sponsors] = await Promise.all([
     prisma.match.findMany({
       where: { result: { not: null }, date: { lte: new Date() } },
       include: { team: true },
@@ -22,6 +22,11 @@ async function getHomeData() {
       include: { team: true },
       orderBy: { date: 'asc' },
       take: 5,
+    }),
+    prisma.match.findFirst({
+      where: { result: null, date: { gte: new Date() } },
+      include: { team: true },
+      orderBy: { date: 'asc' },
     }),
     prisma.newsArticle.findMany({
       where: { status: 'PUBLISHED' },
@@ -39,7 +44,7 @@ async function getHomeData() {
   const matchCount = await prisma.match.count({ where: { result: { not: null } } })
   const winCount = await prisma.match.count({ where: { result: 'WIN' } })
 
-  return { recentMatches, upcomingMatches, featuredNews, sponsors, playerCount, matchCount, winCount }
+  return { recentMatches, upcomingMatches, nextMatch, featuredNews, sponsors, playerCount, matchCount, winCount }
 }
 
 export default async function HomePage() {
@@ -47,7 +52,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <HeroSection upcomingMatch={data.upcomingMatches[0]} />
+      <HeroSection upcomingMatch={data.nextMatch ?? undefined} />
       <StatsSection
         playerCount={data.playerCount}
         matchCount={data.matchCount}
