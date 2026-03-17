@@ -17,7 +17,7 @@ interface Match {
 export function HeroSection({ upcomingMatch }: { upcomingMatch?: Match }) {
   return (
     <section
-      className="min-h-[100svh] md:min-h-[85vh] flex items-center relative overflow-hidden pt-24"
+      className="min-h-[100svh] md:min-h-[85vh] flex items-start md:items-center relative overflow-hidden pt-24"
       style={{
         backgroundImage: 'url(https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=2560&q=80)',
         backgroundSize: 'cover',
@@ -29,7 +29,7 @@ export function HeroSection({ upcomingMatch }: { upcomingMatch?: Match }) {
       {/* Subtle gold vignette at bottom */}
       <div className="absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-black/60 to-transparent" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-20 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 relative z-10">
         <div className="max-w-3xl">
           {/* Badge */}
           <motion.div
