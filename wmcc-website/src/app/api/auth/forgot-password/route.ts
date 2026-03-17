@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
       data: { userId: user.id, token: tokenHash, expiresAt },
     })
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://wmccmk.co.uk'
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://wmccmk.com'
     const resetUrl = `${baseUrl}/members/reset-password?token=${rawToken}`
 
     void sendPasswordResetEmail(user.email, user.firstName, resetUrl)
