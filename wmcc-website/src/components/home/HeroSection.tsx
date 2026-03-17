@@ -1,9 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 import { formatDate } from '@/lib/utils'
 import { MapPin, Calendar, ChevronRight, Trophy } from 'lucide-react'
 import { motion } from 'framer-motion'
+import axios from 'axios'
 
 interface Match {
   id: string
@@ -15,6 +17,12 @@ interface Match {
 }
 
 export function HeroSection({ upcomingMatch }: { upcomingMatch?: Match }) {
+  const [loggedIn, setLoggedIn] = useState(false)
+
+  useEffect(() => {
+    axios.get('/api/auth/me').then(() => setLoggedIn(true)).catch(() => setLoggedIn(false))
+  }, [])
+
   return (
     <section
       className="h-[100svh] md:min-h-[85vh] md:h-[85vh] flex flex-col md:flex-row md:items-center relative overflow-hidden pt-24"
@@ -73,9 +81,11 @@ export function HeroSection({ upcomingMatch }: { upcomingMatch?: Match }) {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-wrap gap-4"
           >
-            <Link href="/membership" className="btn-outline-white flex items-center gap-2 text-base">
-              Join the Club <ChevronRight className="h-4 w-4" />
-            </Link>
+            {!loggedIn && (
+              <Link href="/membership" className="btn-outline-white flex items-center gap-2 text-base">
+                Join the Club <ChevronRight className="h-4 w-4" />
+              </Link>
+            )}
             <Link href="/fixtures" className="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 border border-white/20">
               View Fixtures
             </Link>
