@@ -11,7 +11,7 @@ export function Footer() {
   const [loggedIn, setLoggedIn] = useState(false)
 
   useEffect(() => {
-    axios.get('/api/auth/me').then(() => setLoggedIn(true)).catch(() => setLoggedIn(false))
+    axios.get('/api/auth/me').then((res) => setLoggedIn(!!res.data.user)).catch(() => setLoggedIn(false))
   }, [pathname])
 
   if (pathname.startsWith('/admin')) return null
