@@ -45,9 +45,6 @@ export function Navbar() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const pathname = usePathname()
 
-  // Admin panel has its own navigation — hide the public navbar there
-  if (pathname.startsWith('/admin')) return null
-
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -71,6 +68,9 @@ export function Navbar() {
     setUser(null)
     window.location.href = '/'
   }
+
+  // Admin panel has its own navigation — hide the public navbar there
+  if (pathname.startsWith('/admin')) return null
 
   return (
     <header
