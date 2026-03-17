@@ -192,7 +192,7 @@ export default function EditMatchPage() {
         {/* League */}
         <div>
           <label className="label">League / Competition</label>
-          <input type="text" className="input" placeholder="e.g. South Northants League" value={form.leagueName} onChange={(e) => set('leagueName', e.target.value)} />
+          <input type="text" className="input" placeholder="e.g. Bucks League" value={form.leagueName} onChange={(e) => set('leagueName', e.target.value)} />
         </div>
 
         {/* Match report */}

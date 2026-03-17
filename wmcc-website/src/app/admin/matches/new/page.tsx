@@ -273,7 +273,7 @@ export default function NewMatchPage() {
           <input
             type="text"
             className="input"
-            placeholder="e.g. South Northants League"
+            placeholder="e.g. Bucks League"
             value={form.leagueName}
             onChange={(e) => set('leagueName', e.target.value)}
           />

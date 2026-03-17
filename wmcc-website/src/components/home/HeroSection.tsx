@@ -39,7 +39,7 @@ export function HeroSection({ upcomingMatch }: { upcomingMatch?: Match }) {
             className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs sm:text-sm font-medium px-3 py-1.5 sm:px-4 sm:py-2 rounded-full mb-4 md:mb-6"
           >
             <Trophy className="h-4 w-4 text-yellow-400" />
-            Est. 2020 — Proud Members of South Northants League
+            Est. 2020 — Proud Members of Bucks League
           </motion.div>
 
           {/* Headline */}
