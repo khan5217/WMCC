@@ -35,7 +35,7 @@ export default function AboutPage() {
                   has always been built on the values of sportsmanship, inclusivity, and a love of the game.
                 </p>
                 <p>
-                  Today, WMCC fields two teams in the South Northants Cricket League and continues to grow
+                  Today, WMCC fields two teams in the Bucks League and continues to grow
                   each season. We are proud members of the England and Wales Cricket Board (ECB) and
                   Northamptonshire Cricket Board.
                 </p>
@@ -43,10 +43,10 @@ export default function AboutPage() {
             </div>
             <div className="grid grid-cols-2 gap-4">
               {[
-                { icon: Trophy, label: 'League Winners', value: '8×' },
-                { icon: Users, label: 'Players Developed', value: '500+' },
+                { icon: Trophy, label: 'Tournament Winners', value: '8×' },
+                { icon: Users, label: 'Players Developed', value: '50+' },
                 { icon: Heart, label: 'Years of Cricket', value: '5+' },
-                { icon: Shield, label: 'Active Members', value: '120+' },
+                { icon: Shield, label: 'Active Members', value: '30+' },
               ].map(({ icon: Icon, label, value }) => (
                 <div key={label} className="card p-6 text-center">
                   <Icon className="h-8 w-8 text-cricket-green mx-auto mb-3" />
