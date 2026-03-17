@@ -22,16 +22,65 @@ export default async function AdminMatchesPage() {
   })
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 font-serif">Matches</h1>
+    <div className="p-4 md:p-8">
+      <div className="flex items-center justify-between mb-6 gap-3">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 font-serif">Matches</h1>
         <Link href="/admin/matches/new" className="btn-primary flex items-center gap-2 text-sm">
           <Plus className="h-4 w-4" /> Add Match
         </Link>
       </div>
 
       <div className="card overflow-hidden">
-        <div className="overflow-x-auto">
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-gray-100">
+          {matches.length === 0 && (
+            <p className="px-4 py-10 text-center text-gray-400 text-sm">No matches found.</p>
+          )}
+          {matches.map((match) => {
+            const score = match.isLive && match.liveScore
+              ? match.liveScore
+              : [match.wmccScore, match.oppositionScore].filter(Boolean).join(' / ') || null
+            return (
+              <div key={match.id} className={`p-4 ${match.isLive ? 'bg-red-50' : ''}`}>
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      {match.isLive && (
+                        <span className="inline-flex items-center gap-1 text-xs font-bold text-red-600">
+                          <Radio className="h-3 w-3" /> LIVE
+                        </span>
+                      )}
+                      <span className="font-semibold text-gray-900 text-sm">
+                        {match.team.type.replace('_', ' ')} {match.isHome ? 'vs' : '@'} {match.opposition}
+                      </span>
+                    </div>
+                    <div className="text-xs text-gray-400 mt-0.5">
+                      {formatDate(match.date)} · {match.format.replace('_', ' ')} · {match.venue}
+                    </div>
+                    {score && <div className="text-xs font-mono text-gray-600 mt-1">{score}</div>}
+                  </div>
+                  {match.result && (
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full shrink-0 ${resultColors[match.result]}`}>
+                      {match.result.replace('_', ' ')}
+                    </span>
+                  )}
+                </div>
+                <div className="flex items-center gap-4 mt-2">
+                  <Link href={`/admin/matches/${match.id}/live`} className="inline-flex items-center gap-1 text-xs text-red-600 font-medium">
+                    <Radio className="h-3 w-3" /> Live
+                  </Link>
+                  <Link href={`/admin/matches/${match.id}/edit`} className="text-xs text-cricket-green font-medium hover:underline">
+                    Edit →
+                  </Link>
+                  <DeleteButton endpoint={`/api/matches/${match.id}`} label={match.opposition} />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
