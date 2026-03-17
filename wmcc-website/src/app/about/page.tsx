@@ -36,8 +36,7 @@ export default function AboutPage() {
                 </p>
                 <p>
                   Today, WMCC fields two teams in the Bucks League and continues to grow
-                  each season. We are proud members of the England and Wales Cricket Board (ECB) and
-                  Northamptonshire Cricket Board.
+                  each season. We are proud members of the England and Wales Cricket Board (ECB).
                 </p>
               </div>
             </div>
