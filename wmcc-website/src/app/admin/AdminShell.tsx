@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Users, Trophy, Newspaper, Camera, FileText, Settings,
-  LayoutDashboard, Mail, Star, Upload, Menu, X, ChevronRight,
+  LayoutDashboard, Mail, Star, Upload, Menu, X, ChevronRight, PoundSterling,
 } from 'lucide-react'
 
 const NAV = [
@@ -16,6 +16,7 @@ const NAV = [
   { href: '/admin/gallery', icon: Camera, label: 'Gallery' },
   { href: '/admin/documents', icon: FileText, label: 'Documents' },
   { href: '/admin/members', icon: Users, label: 'Members' },
+  { href: '/admin/membership-fees', icon: PoundSterling, label: 'Membership Fees' },
   { href: '/admin/sponsors', icon: Star, label: 'Sponsors' },
   { href: '/admin/import', icon: Upload, label: 'CSV Import' },
   { href: '/admin/contacts', icon: Mail, label: 'Contact Messages' },

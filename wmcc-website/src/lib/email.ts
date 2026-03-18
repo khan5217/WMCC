@@ -567,6 +567,107 @@ function newContactAlertHtml(name: string, email: string, phone: string | undefi
 </html>`
 }
 
+function membershipReminderHtml(firstName: string, season: number, amount: string, siteUrl: string): string {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+        <tr>
+          <td style="background:#1a5c38;border-radius:12px 12px 0 0;padding:32px 40px;text-align:center;">
+            <p style="margin:0;color:#ffffff;font-size:22px;font-weight:bold;letter-spacing:1px;">WMCC</p>
+            <p style="margin:4px 0 0;color:#86efac;font-size:13px;">Milton Keynes Cricket Club</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#ffffff;padding:40px;border-radius:0 0 12px 12px;">
+            <p style="margin:0 0 8px;font-size:20px;font-weight:bold;color:#111827;">Membership fee reminder — ${season} season</p>
+            <p style="margin:0 0 24px;font-size:15px;color:#6b7280;">
+              Hi ${firstName}, this is a friendly reminder that your ${season} WMCC membership fee is outstanding.
+            </p>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:8px;margin-bottom:24px;">
+              <tr>
+                <td style="padding:16px 20px;border-bottom:1px solid #e5e7eb;">
+                  <p style="margin:0;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">Season</p>
+                  <p style="margin:4px 0 0;font-size:14px;color:#111827;font-weight:500;">${season}</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:16px 20px;">
+                  <p style="margin:0;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">Amount Due</p>
+                  <p style="margin:4px 0 0;font-size:18px;color:#111827;font-weight:700;">${amount}</p>
+                </td>
+              </tr>
+            </table>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#ecfdf5;border:1px solid #6ee7b7;border-radius:8px;margin-bottom:28px;">
+              <tr>
+                <td style="padding:16px 20px;">
+                  <p style="margin:0;font-size:14px;color:#065f46;">
+                    You can pay online via the membership page, or speak to a committee member to arrange payment by cash, bank transfer, or cheque.
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+              <tr>
+                <td align="center">
+                  <a href="${siteUrl}/membership"
+                     style="display:inline-block;background:#1a5c38;color:#ffffff;font-size:15px;font-weight:bold;
+                            text-decoration:none;padding:14px 32px;border-radius:8px;">
+                    Pay Membership Fee →
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0 0 8px;font-size:14px;color:#374151;">
+              If you have already paid by bank transfer or cash, please ignore this reminder — the committee will update your record shortly.
+            </p>
+            <p style="margin:0;font-size:13px;color:#9ca3af;text-align:center;">
+              Questions? Contact us at <a href="mailto:${CLUB_EMAIL}" style="color:#1a5c38;">${CLUB_EMAIL}</a>
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px;text-align:center;">
+            <p style="margin:0;font-size:12px;color:#9ca3af;">
+              WMCC · Crownhill Cricket Ground · 6 Marley Grove · Milton Keynes · MK8 0AT
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}
+
+export async function sendMembershipReminderEmail(
+  to: string,
+  firstName: string,
+  season: number,
+  amount: string
+): Promise<void> {
+  if (!process.env.RESEND_API_KEY) return
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://wmccmk.com'
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to,
+      subject: `WMCC ${season} membership fee reminder`,
+      html: membershipReminderHtml(firstName, season, amount, siteUrl),
+    })
+    if (error) console.error('Membership reminder email failed:', error)
+  } catch (err) {
+    console.error('Membership reminder email failed:', err)
+  }
+}
+
 export async function sendNewContactAlert(
   name: string,
   email: string,
