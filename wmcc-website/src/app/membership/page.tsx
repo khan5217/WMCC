@@ -18,10 +18,10 @@ const PLANS = [
     paymentNote: 'Pay once by card',
     features: [
       'Play in 1st & 2nd XI',
-      'All pre-season & mid-season nets',
+      'All practice matches',
       'Voting rights at AGM',
       'Members login & documents',
-      'Club kit discount',
+      'Free club kit',
       'Full 2026 season coverage',
     ],
   },
@@ -29,17 +29,18 @@ const PLANS = [
     id: 'SOCIAL',
     name: 'Monthly Supporter',
     price: '£5',
-    billing: 'per month — cancel anytime',
+    billing: 'per month',
     icon: Heart,
     color: 'border-blue-400',
     recommended: false,
     paymentNote: 'Card or Direct Debit',
     features: [
-      'Attend all home matches',
-      'Club events & socials',
-      'Members login & updates',
-      'Newsletter & match reports',
-      'No long-term commitment',
+      'Play in 1st & 2nd XI',
+      'All practice matches',
+      'Voting rights at AGM',
+      'Members login & documents',
+      'Free club kit',
+      'Full 2026 season coverage',
     ],
   },
 ]
@@ -100,7 +101,7 @@ export default function MembershipPage() {
             <>
               <div className="text-center mb-12">
                 <h2 className="section-title">Choose Your Membership</h2>
-                <p className="section-subtitle">Two simple options — pick what works for you</p>
+                <p className="section-subtitle">Same great benefits — choose how you&apos;d like to pay</p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto mb-10">
@@ -216,7 +217,6 @@ export default function MembershipPage() {
                   {selected === 'SOCIAL' && (
                     <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-blue-700">
                       Monthly subscription — you will be taken to Stripe where you can pay by <strong>card or Direct Debit</strong>.
-                      Cancel anytime from your Stripe account or by contacting us.
                     </div>
                   )}
                   <button type="submit" disabled={loading} className="btn-primary w-full text-base py-3.5">
