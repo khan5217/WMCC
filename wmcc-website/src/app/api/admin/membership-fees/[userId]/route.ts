@@ -22,7 +22,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { userId: st
     })
 
     const data = {
-      tier: user.membershipTier,
+      ...(user.membershipTier !== null && { tier: user.membershipTier }),
       status,
       amount: amount ?? 4000,
       paymentChannel: paymentChannel ?? null,
