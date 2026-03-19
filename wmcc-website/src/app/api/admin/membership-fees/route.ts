@@ -40,7 +40,7 @@ export async function GET(req: NextRequest) {
       email: u.email,
       membershipTier: u.membershipTier,
       createdAt: u.createdAt,
-      amountDue: TIER_AMOUNTS[u.membershipTier] ?? 4000,
+      amountDue: TIER_AMOUNTS[u.membershipTier ?? ''] ?? 4000,
       membership: u.memberships[0] ?? null,
     }))
 

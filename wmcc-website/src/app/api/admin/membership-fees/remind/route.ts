@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     let sent = 0
     let failed = 0
     for (const user of users) {
-      const amount = formatAmount(TIER_AMOUNTS[user.membershipTier] ?? 4000)
+      const amount = formatAmount(TIER_AMOUNTS[user.membershipTier ?? ''] ?? 4000)
       try {
         await sendMembershipReminderEmail(user.email, user.firstName, season, amount)
         sent++
