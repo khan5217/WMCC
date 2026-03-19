@@ -50,7 +50,7 @@ export default function MembershipPage() {
   const [step, setStep] = useState<'choose' | 'register'>('choose')
   const [loading, setLoading] = useState(false)
   const [form, setForm] = useState({
-    firstName: '', lastName: '', email: '', phone: '', password: '', confirmPassword: '',
+    firstName: '', lastName: '', email: '', phone: '', password: '', confirmPassword: '', dateOfBirth: '',
   })
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -68,6 +68,7 @@ export default function MembershipPage() {
         phone: form.phone,
         password: form.password,
         membershipTier: selected,
+        dateOfBirth: form.dateOfBirth,
       })
 
       const res = await axios.post('/api/payments/create-checkout', {
@@ -192,6 +193,12 @@ export default function MembershipPage() {
                       <input className="input" type="text" required value={form.lastName}
                         onChange={(e) => setForm({ ...form, lastName: e.target.value })} placeholder="Smith" />
                     </div>
+                  </div>
+                  <div>
+                    <label className="label">Date of Birth *</label>
+                    <input className="input" type="date" required value={form.dateOfBirth}
+                      max={new Date(new Date().setFullYear(new Date().getFullYear() - 5)).toISOString().split('T')[0]}
+                      onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })} />
                   </div>
                   <div>
                     <label className="label">Email Address *</label>

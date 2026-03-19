@@ -49,6 +49,7 @@ model User {
   membershipStatus MembershipStatus @default(PENDING)
   membershipTier   MembershipTier?
   membershipExpiry DateTime?
+  dateOfBirth      DateTime?
   isVerified       Boolean          @default(false)
   twoFactorEnabled Boolean          @default(true)
   createdAt        DateTime         @default(now())
