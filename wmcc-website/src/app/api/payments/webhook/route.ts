@@ -18,6 +18,19 @@ export async function POST(req: NextRequest) {
   // One-time payment OR subscription checkout completed
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
+
+    // Handle match fee payment
+    if (session.metadata?.type === 'match_fee') {
+      const { assignmentId } = session.metadata
+      if (assignmentId) {
+        await prisma.matchFeeAssignment.update({
+          where: { id: assignmentId },
+          data: { status: 'PAID', paidAt: new Date(), paymentChannel: 'stripe' },
+        })
+      }
+      return NextResponse.json({ received: true })
+    }
+
     const { userId, membershipTier, season } = session.metadata!
     const expiryDate = new Date(`${parseInt(season) + 1}-03-31`)
 

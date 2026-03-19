@@ -736,3 +736,198 @@ export async function sendBirthdayWishEmail(to: string, firstName: string): Prom
     console.error('Birthday wish email failed:', err)
   }
 }
+
+// ─────────────────────────────────────────────
+// MATCH FEE EMAILS
+// ─────────────────────────────────────────────
+
+function matchFeePaymentLinkHtml(
+  firstName: string,
+  matchDesc: string,
+  amount: string,
+  payLink: string
+): string {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+        <tr>
+          <td style="background:#1a5c38;border-radius:12px 12px 0 0;padding:32px 40px;text-align:center;">
+            <p style="margin:0;color:#ffffff;font-size:22px;font-weight:bold;letter-spacing:1px;">WMCC</p>
+            <p style="margin:4px 0 0;color:#86efac;font-size:13px;">Milton Keynes Cricket Club</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#ffffff;padding:40px;border-radius:0 0 12px 12px;">
+            <p style="margin:0 0 8px;font-size:20px;font-weight:bold;color:#111827;">Match Fee Payment</p>
+            <p style="margin:0 0 24px;font-size:15px;color:#6b7280;">Hi ${firstName}, your match fee is now due for the following fixture.</p>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:8px;margin-bottom:24px;">
+              <tr>
+                <td style="padding:16px 20px;border-bottom:1px solid #e5e7eb;">
+                  <p style="margin:0;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">Match</p>
+                  <p style="margin:4px 0 0;font-size:14px;color:#111827;font-weight:500;">${matchDesc}</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:16px 20px;">
+                  <p style="margin:0;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">Amount Due</p>
+                  <p style="margin:4px 0 0;font-size:22px;color:#1a5c38;font-weight:bold;">${amount}</p>
+                </td>
+              </tr>
+            </table>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+              <tr>
+                <td align="center">
+                  <a href="${payLink}" style="display:inline-block;background:#1a5c38;color:#ffffff;font-size:15px;font-weight:bold;padding:14px 36px;border-radius:8px;text-decoration:none;">
+                    Pay Now — ${amount}
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0 0 8px;font-size:13px;color:#6b7280;text-align:center;">
+              Or copy this link: <a href="${payLink}" style="color:#1a5c38;">${payLink}</a>
+            </p>
+            <p style="margin:16px 0 0;font-size:13px;color:#9ca3af;text-align:center;">
+              If you have already paid please ignore this email. Contact <a href="mailto:${CLUB_EMAIL}" style="color:#1a5c38;">${CLUB_EMAIL}</a> with any queries.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px;text-align:center;">
+            <p style="margin:0;font-size:12px;color:#9ca3af;">
+              WMCC · Crownhill Cricket Ground · Milton Keynes
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}
+
+function matchFeeReminderHtml(
+  firstName: string,
+  matchDesc: string,
+  amount: string,
+  payLink: string,
+  reminderCount: number
+): string {
+  const ordinal = reminderCount === 1 ? '1st' : reminderCount === 2 ? '2nd' : `${reminderCount}th`
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+        <tr>
+          <td style="background:#1a5c38;border-radius:12px 12px 0 0;padding:32px 40px;text-align:center;">
+            <p style="margin:0;color:#ffffff;font-size:22px;font-weight:bold;letter-spacing:1px;">WMCC</p>
+            <p style="margin:4px 0 0;color:#86efac;font-size:13px;">Milton Keynes Cricket Club</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#ffffff;padding:40px;border-radius:0 0 12px 12px;">
+            <p style="margin:0 0 8px;font-size:20px;font-weight:bold;color:#111827;">Outstanding Match Fee — ${ordinal} Reminder</p>
+            <p style="margin:0 0 24px;font-size:15px;color:#6b7280;">Hi ${firstName}, your match fee is still outstanding. Please pay at your earliest convenience.</p>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;margin-bottom:24px;">
+              <tr>
+                <td style="padding:16px 20px;border-bottom:1px solid #fecaca;">
+                  <p style="margin:0;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">Match</p>
+                  <p style="margin:4px 0 0;font-size:14px;color:#111827;font-weight:500;">${matchDesc}</p>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding:16px 20px;">
+                  <p style="margin:0;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">Amount Outstanding</p>
+                  <p style="margin:4px 0 0;font-size:22px;color:#dc2626;font-weight:bold;">${amount}</p>
+                </td>
+              </tr>
+            </table>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+              <tr>
+                <td align="center">
+                  <a href="${payLink}" style="display:inline-block;background:#dc2626;color:#ffffff;font-size:15px;font-weight:bold;padding:14px 36px;border-radius:8px;text-decoration:none;">
+                    Pay Now — ${amount}
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0 0 8px;font-size:13px;color:#6b7280;text-align:center;">
+              Or copy this link: <a href="${payLink}" style="color:#1a5c38;">${payLink}</a>
+            </p>
+            <p style="margin:16px 0 0;font-size:13px;color:#9ca3af;text-align:center;">
+              Contact <a href="mailto:${CLUB_EMAIL}" style="color:#1a5c38;">${CLUB_EMAIL}</a> if you believe this is an error.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px;text-align:center;">
+            <p style="margin:0;font-size:12px;color:#9ca3af;">
+              WMCC · Crownhill Cricket Ground · Milton Keynes
+            </p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}
+
+export async function sendMatchFeePaymentLink(
+  to: string,
+  firstName: string,
+  matchDesc: string,
+  amount: string,
+  payLink: string
+): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to,
+      subject: `Match Fee Due — ${matchDesc}`,
+      html: matchFeePaymentLinkHtml(firstName, matchDesc, amount, payLink),
+    })
+    if (error) { console.error('Match fee email failed:', error); return false }
+    return true
+  } catch (err) {
+    console.error('Match fee email failed:', err)
+    return false
+  }
+}
+
+export async function sendMatchFeeReminder(
+  to: string,
+  firstName: string,
+  matchDesc: string,
+  amount: string,
+  payLink: string,
+  reminderCount: number
+): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to,
+      subject: `Outstanding Match Fee — ${matchDesc}`,
+      html: matchFeeReminderHtml(firstName, matchDesc, amount, payLink, reminderCount),
+    })
+    if (error) { console.error('Match fee reminder failed:', error); return false }
+    return true
+  } catch (err) {
+    console.error('Match fee reminder failed:', err)
+    return false
+  }
+}
