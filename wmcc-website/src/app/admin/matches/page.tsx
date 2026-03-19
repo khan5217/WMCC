@@ -1,7 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { formatDate } from '@/lib/utils'
 import Link from 'next/link'
-import { Plus, Radio } from 'lucide-react'
+import { Plus, Radio, PoundSterling } from 'lucide-react'
 import DeleteButton from '@/components/admin/DeleteButton'
 
 export const dynamic = 'force-dynamic'
@@ -72,6 +72,9 @@ export default async function AdminMatchesPage() {
                   <Link href={`/admin/matches/${match.id}/edit`} className="text-xs text-cricket-green font-medium hover:underline">
                     Edit →
                   </Link>
+                  <Link href={`/admin/match-fees/${match.id}`} className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium hover:underline">
+                    <PoundSterling className="h-3 w-3" /> Fees
+                  </Link>
                   <DeleteButton endpoint={`/api/matches/${match.id}`} label={match.opposition} />
                 </div>
               </div>
@@ -128,6 +131,9 @@ export default async function AdminMatchesPage() {
                       </Link>
                       <Link href={`/admin/matches/${match.id}/edit`} className="text-xs text-cricket-green hover:underline font-medium">
                         Edit →
+                      </Link>
+                      <Link href={`/admin/match-fees/${match.id}`} className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline font-medium">
+                        <PoundSterling className="h-3 w-3" /> Fees
                       </Link>
                       <DeleteButton endpoint={`/api/matches/${match.id}`} label={match.opposition} />
                     </div>
