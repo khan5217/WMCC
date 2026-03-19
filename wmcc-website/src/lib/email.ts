@@ -616,7 +616,7 @@ function membershipReminderHtml(firstName: string, season: number, amount: strin
             <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
               <tr>
                 <td align="center">
-                  <a href="${siteUrl}/membership"
+                  <a href="${siteUrl}/membership/renew"
                      style="display:inline-block;background:#1a5c38;color:#ffffff;font-size:15px;font-weight:bold;
                             text-decoration:none;padding:14px 32px;border-radius:8px;">
                     Pay Membership Fee →

@@ -39,7 +39,7 @@ export default function RenewMembershipPage() {
         setUser(u)
         if (u.membershipTier) setSelected(u.membershipTier)
       })
-      .catch(() => router.push('/members/login'))
+      .catch(() => router.push('/members/login?redirect=/membership/renew'))
   }, [router])
 
   const handleRenew = async () => {

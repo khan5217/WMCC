@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, Suspense } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { Shield, Eye, EyeOff, Smartphone, ArrowRight, Lock, CheckCircle } from 'lucide-react'
 import axios from 'axios'
 import toast from 'react-hot-toast'
@@ -11,8 +11,10 @@ type Step = 'credentials' | 'otp'
 
 const RESEND_COOLDOWN = 30
 
-export default function MembersLoginPage() {
+function LoginForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectTo = searchParams.get('redirect') ?? '/members'
   const [step, setStep] = useState<Step>('credentials')
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -52,7 +54,7 @@ export default function MembersLoginPage() {
       const res = await axios.post('/api/auth/login', { email: email.trim(), password })
       if (res.data.success) {
         toast.success('Welcome back!')
-        router.push('/members')
+        router.push(redirectTo)
         router.refresh()
       } else {
         setUserId(res.data.userId)
@@ -73,7 +75,7 @@ export default function MembersLoginPage() {
     try {
       await axios.post('/api/auth/verify-otp', { userId, code })
       toast.success('Welcome back!')
-      router.push('/members')
+      router.push(redirectTo)
       router.refresh()
     } catch (err: any) {
       toast.error(err.response?.data?.error ?? 'Verification failed')
@@ -250,5 +252,13 @@ export default function MembersLoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function MembersLoginPage() {
+  return (
+    <Suspense>
+      <LoginForm />
+    </Suspense>
   )
 }
