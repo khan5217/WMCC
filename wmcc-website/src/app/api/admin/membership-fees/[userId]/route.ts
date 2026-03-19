@@ -21,8 +21,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { userId: st
       where: { userId: params.userId, season },
     })
 
-    const data = {
-      ...(user.membershipTier !== null && { tier: user.membershipTier }),
+    const commonData = {
       status,
       amount: amount ?? 4000,
       paymentChannel: paymentChannel ?? null,
@@ -32,10 +31,21 @@ export async function PATCH(req: NextRequest, { params }: { params: { userId: st
 
     let membership
     if (existing) {
-      membership = await prisma.membership.update({ where: { id: existing.id }, data })
+      membership = await prisma.membership.update({
+        where: { id: existing.id },
+        data: {
+          ...commonData,
+          ...(user.membershipTier !== null && { tier: user.membershipTier }),
+        },
+      })
     } else {
       membership = await prisma.membership.create({
-        data: { ...data, userId: params.userId, season },
+        data: {
+          ...commonData,
+          tier: user.membershipTier ?? 'PLAYING_SENIOR',
+          userId: params.userId,
+          season,
+        },
       })
     }
 
