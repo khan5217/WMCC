@@ -21,6 +21,14 @@ export async function GET(req: NextRequest) {
 
   const teams = await prisma.team.findMany({
     orderBy: [{ season: 'desc' }, { type: 'asc' }],
+    include: {
+      players: {
+        include: {
+          user: { select: { firstName: true, lastName: true, email: true } },
+        },
+        orderBy: [{ user: { firstName: 'asc' } }],
+      },
+    },
   })
 
   return NextResponse.json(teams)
