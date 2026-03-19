@@ -17,6 +17,8 @@ export default function NewPlayerPage() {
     userId: '',
     firstName: '',
     lastName: '',
+    contactPhone: '',
+    contactEmail: '',
     jerseyNumber: '',
     role: 'ALL_ROUNDER',
     battingStyle: 'RIGHT_HAND',
@@ -50,6 +52,8 @@ export default function NewPlayerPage() {
         userId: linkToMember ? form.userId || undefined : undefined,
         firstName: !linkToMember ? form.firstName : undefined,
         lastName: !linkToMember ? form.lastName : undefined,
+        contactPhone: !linkToMember ? form.contactPhone || null : undefined,
+        contactEmail: !linkToMember ? form.contactEmail || null : undefined,
         jerseyNumber: form.jerseyNumber ? parseInt(form.jerseyNumber) : null,
         dateOfBirth: form.dateOfBirth || null,
         bio: form.bio || null,
@@ -114,14 +118,28 @@ export default function NewPlayerPage() {
             )}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="label">First Name *</label>
-              <input type="text" className="input" required={!linkToMember} placeholder="e.g. James" value={form.firstName} onChange={(e) => set('firstName', e.target.value)} />
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="label">First Name *</label>
+                <input type="text" className="input" required={!linkToMember} placeholder="e.g. James" value={form.firstName} onChange={(e) => set('firstName', e.target.value)} />
+              </div>
+              <div>
+                <label className="label">Last Name *</label>
+                <input type="text" className="input" required={!linkToMember} placeholder="e.g. Anderson" value={form.lastName} onChange={(e) => set('lastName', e.target.value)} />
+              </div>
             </div>
-            <div>
-              <label className="label">Last Name *</label>
-              <input type="text" className="input" required={!linkToMember} placeholder="e.g. Anderson" value={form.lastName} onChange={(e) => set('lastName', e.target.value)} />
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="label">Phone Number</label>
+                <input type="tel" className="input" placeholder="e.g. 07700 900000" value={form.contactPhone} onChange={(e) => set('contactPhone', e.target.value)} />
+                <p className="text-xs text-gray-400 mt-0.5">Used for match fee payment links</p>
+              </div>
+              <div>
+                <label className="label">Email Address</label>
+                <input type="email" className="input" placeholder="e.g. james@example.com" value={form.contactEmail} onChange={(e) => set('contactEmail', e.target.value)} />
+                <p className="text-xs text-gray-400 mt-0.5">Used for match fee payment links</p>
+              </div>
             </div>
           </div>
         )}

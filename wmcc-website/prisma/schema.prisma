@@ -203,6 +203,9 @@ model Player {
   dateOfBirth   DateTime?
   nationality   String?
   isActive      Boolean      @default(true)
+  // Contact details for guest/non-member players (null for linked members)
+  contactPhone  String?
+  contactEmail  String?
   // Career stats (manually maintained / imported from CricHeroes)
   totalMatches  Int          @default(0)
   totalRuns     Int          @default(0)
@@ -217,10 +220,11 @@ model Player {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
-  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  teams         Team[]       @relation("TeamPlayers")
-  captainOf     Team[]       @relation("TeamCaptain")
-  performances  Performance[]
+  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teams            Team[]             @relation("TeamPlayers")
+  captainOf        Team[]             @relation("TeamCaptain")
+  performances     Performance[]
+  matchFeeAssignments MatchFeeAssignment[]
 
   @@index([userId])
 }
@@ -272,9 +276,10 @@ model Match {
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 
-  team         Team          @relation(fields: [teamId], references: [id])
-  performances Performance[]
-  galleryItems GalleryItem[]
+  team               Team                 @relation(fields: [teamId], references: [id])
+  performances       Performance[]
+  galleryItems       GalleryItem[]
+  matchFeeAssignments MatchFeeAssignment[]
 
   @@index([teamId])
   @@index([date])
@@ -441,4 +446,64 @@ model SiteSetting {
   key       String   @id
   value     String
   updatedAt DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// MATCH FEES
+// ─────────────────────────────────────────────
+
+enum FeePlayerType {
+  STARTER
+  SUB
+}
+
+enum FeeAssignmentStatus {
+  PENDING
+  PAID
+  OUTSTANDING
+  WAIVED
+}
+
+model MatchFeeProduct {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  starterAmount Int      @default(0)  // pence
+  subAmount     Int      @default(0)  // pence
+  season        Int
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  assignments MatchFeeAssignment[]
+
+  @@index([season])
+}
+
+model MatchFeeAssignment {
+  id                 String              @id @default(cuid())
+  matchId            String
+  playerId           String
+  feeProductId       String?
+  playerType         FeePlayerType       @default(STARTER)
+  amount             Int                 @default(0)  // pence, actual amount charged
+  status             FeeAssignmentStatus @default(PENDING)
+  paymentToken       String?             @unique
+  paymentLinkSentAt  DateTime?
+  paidAt             DateTime?
+  paymentChannel     String?             // 'stripe' | 'cash' | 'bank_transfer' | 'cheque' | 'other'
+  reminderCount      Int                 @default(0)
+  lastReminderAt     DateTime?
+  notes              String?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  match      Match            @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player     Player           @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  feeProduct MatchFeeProduct? @relation(fields: [feeProductId], references: [id])
+
+  @@unique([matchId, playerId])
+  @@index([matchId])
+  @@index([playerId])
+  @@index([paymentToken])
 }

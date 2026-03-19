@@ -7,6 +7,8 @@ const createSchema = z.object({
   userId: z.string().optional(),
   firstName: z.string().optional(),
   lastName: z.string().optional(),
+  contactPhone: z.string().nullable().optional(),
+  contactEmail: z.string().email().nullable().optional(),
   jerseyNumber: z.number().int().positive().nullable().optional(),
   role: z.enum(['BATSMAN', 'BOWLER', 'ALL_ROUNDER', 'WICKET_KEEPER', 'WICKET_KEEPER_BATSMAN']),
   battingStyle: z.enum(['RIGHT_HAND', 'LEFT_HAND']),
@@ -82,6 +84,8 @@ export async function POST(req: NextRequest) {
     const player = await prisma.player.create({
       data: {
         userId,
+        contactPhone: !data.userId ? (data.contactPhone ?? null) : null,
+        contactEmail: !data.userId ? (data.contactEmail ?? null) : null,
         jerseyNumber: data.jerseyNumber ?? null,
         role: data.role,
         battingStyle: data.battingStyle,
