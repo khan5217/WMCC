@@ -688,3 +688,51 @@ export async function sendNewContactAlert(
     console.error('New contact alert email failed:', err)
   }
 }
+
+function birthdayWishHtml(firstName: string): string {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+        <tr>
+          <td style="background:#1a5c38;border-radius:12px 12px 0 0;padding:32px 40px;text-align:center;">
+            <p style="margin:0;color:#ffffff;font-size:22px;font-weight:bold;letter-spacing:1px;">WMCC</p>
+            <p style="margin:4px 0 0;color:#86efac;font-size:13px;">Milton Keynes Cricket Club</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#ffffff;border-radius:0 0 12px 12px;padding:40px;">
+            <p style="margin:0 0 16px;font-size:24px;font-weight:bold;color:#1a5c38;text-align:center;">🎂 Happy Birthday, ${firstName}!</p>
+            <p style="margin:0 0 16px;font-size:15px;color:#374151;line-height:1.6;text-align:center;">
+              Wishing you a wonderful birthday from everyone at WMCC Milton Keynes Cricket Club.
+            </p>
+            <p style="margin:0 0 32px;font-size:15px;color:#374151;line-height:1.6;text-align:center;">
+              We hope this season brings you plenty of runs, wickets, and great memories on the field!
+            </p>
+            <p style="margin:0;font-size:13px;color:#9ca3af;text-align:center;">WMCC Milton Keynes · wmccmk.com</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}
+
+export async function sendBirthdayWishEmail(to: string, firstName: string): Promise<void> {
+  if (!process.env.RESEND_API_KEY) return
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to,
+      subject: `Happy Birthday from WMCC! 🎂`,
+      html: birthdayWishHtml(firstName),
+    })
+    if (error) console.error('Birthday wish email failed:', error)
+  } catch (err) {
+    console.error('Birthday wish email failed:', err)
+  }
+}
