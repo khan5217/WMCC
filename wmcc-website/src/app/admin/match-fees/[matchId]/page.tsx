@@ -10,13 +10,6 @@ import {
   PoundSterling, ChevronDown, User, RefreshCw,
 } from 'lucide-react'
 
-interface FeeProduct {
-  id: string
-  name: string
-  starterAmount: number
-  subAmount: number
-}
-
 interface Assignment {
   id: string
   playerId: string
@@ -75,15 +68,13 @@ export default function MatchFeePage() {
   const [matchInfo, setMatchInfo] = useState<MatchInfo | null>(null)
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [players, setPlayers] = useState<Player[]>([])
-  const [products, setProducts] = useState<FeeProduct[]>([])
   const [loading, setLoading] = useState(true)
 
   // Add player modal
   const [showAdd, setShowAdd] = useState(false)
   const [addPlayerId, setAddPlayerId] = useState('')
-  const [addProductId, setAddProductId] = useState('')
   const [addPlayerType, setAddPlayerType] = useState<'STARTER' | 'SUB'>('STARTER')
-  const [addAmount, setAddAmount] = useState('')
+  const [addAmount, setAddAmount] = useState('10')
   const [addNotes, setAddNotes] = useState('')
   const [addSaving, setAddSaving] = useState(false)
 
@@ -99,16 +90,14 @@ export default function MatchFeePage() {
   const fetchData = useCallback(async () => {
     setLoading(true)
     try {
-      const [matchRes, assignRes, playersRes, productsRes] = await Promise.all([
+      const [matchRes, assignRes, playersRes] = await Promise.all([
         axios.get(`/api/matches/${matchId}`),
         axios.get(`/api/admin/match-fees/${matchId}/assignments`),
         axios.get('/api/admin/players-list'),
-        axios.get('/api/admin/match-fees/products'),
       ])
       setMatchInfo(matchRes.data)
       setAssignments(assignRes.data)
       setPlayers(playersRes.data)
-      setProducts(productsRes.data)
     } catch {
       toast.error('Failed to load match data')
     } finally {
@@ -117,15 +106,6 @@ export default function MatchFeePage() {
   }, [matchId])
 
   useEffect(() => { fetchData() }, [fetchData])
-
-  // Auto-fill amount when product or playerType changes in add modal
-  useEffect(() => {
-    if (!addProductId) return
-    const product = products.find((p) => p.id === addProductId)
-    if (!product) return
-    const amount = addPlayerType === 'STARTER' ? product.starterAmount : product.subAmount
-    setAddAmount(String(amount / 100))
-  }, [addProductId, addPlayerType, products])
 
   const assignedPlayerIds = new Set(assignments.map((a) => a.playerId))
   const availablePlayers = players.filter((p) => !assignedPlayerIds.has(p.id))
@@ -137,7 +117,6 @@ export default function MatchFeePage() {
     try {
       await axios.post(`/api/admin/match-fees/${matchId}/assignments`, {
         playerId: addPlayerId,
-        feeProductId: addProductId || null,
         playerType: addPlayerType,
         amount: Math.round(parseFloat(addAmount) * 100),
         notes: addNotes || null,
@@ -145,9 +124,8 @@ export default function MatchFeePage() {
       toast.success('Player added')
       setShowAdd(false)
       setAddPlayerId('')
-      setAddProductId('')
       setAddPlayerType('STARTER')
-      setAddAmount('')
+      setAddAmount('10')
       setAddNotes('')
       fetchData()
     } catch (err: any) {
@@ -506,36 +484,18 @@ export default function MatchFeePage() {
                 )}
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">Player Type</label>
-                  <div className="relative">
-                    <select
-                      value={addPlayerType}
-                      onChange={(e) => setAddPlayerType(e.target.value as 'STARTER' | 'SUB')}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm appearance-none bg-white pr-8"
-                    >
-                      <option value="STARTER">Starter</option>
-                      <option value="SUB">Substitute</option>
-                    </select>
-                    <ChevronDown className="absolute right-2.5 top-3 h-4 w-4 text-gray-400 pointer-events-none" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">Fee Product</label>
-                  <div className="relative">
-                    <select
-                      value={addProductId}
-                      onChange={(e) => setAddProductId(e.target.value)}
-                      className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm appearance-none bg-white pr-8"
-                    >
-                      <option value="">None (manual)</option>
-                      {products.filter((p) => p.isActive !== false).map((p) => (
-                        <option key={p.id} value={p.id}>{p.name}</option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-2.5 top-3 h-4 w-4 text-gray-400 pointer-events-none" />
-                  </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">Player Type</label>
+                <div className="relative">
+                  <select
+                    value={addPlayerType}
+                    onChange={(e) => setAddPlayerType(e.target.value as 'STARTER' | 'SUB')}
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm appearance-none bg-white pr-8"
+                  >
+                    <option value="STARTER">Starter</option>
+                    <option value="SUB">Substitute</option>
+                  </select>
+                  <ChevronDown className="absolute right-2.5 top-3 h-4 w-4 text-gray-400 pointer-events-none" />
                 </div>
               </div>
 
