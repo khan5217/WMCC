@@ -123,6 +123,8 @@ model Membership {
   currency        String           @default("GBP")
   stripeSessionId String?          @unique
   stripePaymentId String?          @unique
+  paymentChannel  String?          // 'stripe' | 'bank_transfer' | 'cash' | 'cheque' | 'other'
+  notes           String?
   paidAt          DateTime?
   status          PaymentStatus    @default(PENDING)
   createdAt       DateTime         @default(now())
