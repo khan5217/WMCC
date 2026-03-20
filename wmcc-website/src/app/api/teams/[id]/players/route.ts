@@ -32,17 +32,18 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   if (!team) return NextResponse.json({ error: 'Team not found' }, { status: 404 })
 
   try {
-    await prisma.team.update({
-      where: { id: params.id },
-      data: { players: { connect: { id: playerId } } },
-    })
+    // _TeamPlayers has A=Team.id, B=Player.id in the actual DB
+    await prisma.$executeRaw`
+      INSERT INTO "_TeamPlayers" ("A", "B") VALUES (${params.id}, ${playerId})
+    `
     return NextResponse.json({ ok: true })
   } catch (error: any) {
     console.error('Add player error:', error)
-    if (error.code === 'P2002') {
+    const msg = (error.message ?? '') + JSON.stringify(error.meta ?? '')
+    if (msg.includes('23505') || msg.includes('unique') || msg.includes('duplicate')) {
       return NextResponse.json({ error: 'Player is already in this team' }, { status: 409 })
     }
-    return NextResponse.json({ error: error.message ?? 'Failed to add player' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to add player' }, { status: 500 })
   }
 }
 
@@ -55,10 +56,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   if (!playerId) return NextResponse.json({ error: 'playerId required' }, { status: 400 })
 
   try {
-    await prisma.team.update({
-      where: { id: params.id },
-      data: { players: { disconnect: { id: playerId } } },
-    })
+    // _TeamPlayers has A=Team.id, B=Player.id in the actual DB
+    await prisma.$executeRaw`
+      DELETE FROM "_TeamPlayers" WHERE "A" = ${params.id} AND "B" = ${playerId}
+    `
     return NextResponse.json({ ok: true })
   } catch {
     return NextResponse.json({ error: 'Failed to remove player' }, { status: 500 })

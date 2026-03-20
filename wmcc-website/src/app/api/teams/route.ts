@@ -21,17 +21,38 @@ export async function GET(req: NextRequest) {
 
   const teams = await prisma.team.findMany({
     orderBy: [{ season: 'desc' }, { type: 'asc' }],
-    include: {
-      players: {
-        include: {
-          user: { select: { firstName: true, lastName: true, email: true } },
-        },
-        orderBy: [{ user: { firstName: 'asc' } }],
-      },
-    },
   })
 
-  return NextResponse.json(teams)
+  if (teams.length === 0) return NextResponse.json([])
+
+  // _TeamPlayers has A=Team.id, B=Player.id in the actual DB
+  const rows = await prisma.$queryRaw<{
+    teamId: string
+    playerId: string
+    jerseyNumber: number | null
+    firstName: string
+    lastName: string
+    email: string
+  }[]>`
+    SELECT tp."A" as "teamId", p.id as "playerId", p."jerseyNumber",
+           u."firstName", u."lastName", u.email
+    FROM "_TeamPlayers" tp
+    JOIN "Player" p ON p.id = tp."B"
+    JOIN "User" u ON u.id = p."userId"
+    ORDER BY u."firstName" ASC
+  `
+
+  const playersByTeam: Record<string, { id: string; jerseyNumber: number | null; user: { firstName: string; lastName: string; email: string } }[]> = {}
+  for (const row of rows) {
+    if (!playersByTeam[row.teamId]) playersByTeam[row.teamId] = []
+    playersByTeam[row.teamId].push({
+      id: row.playerId,
+      jerseyNumber: row.jerseyNumber !== null ? Number(row.jerseyNumber) : null,
+      user: { firstName: row.firstName, lastName: row.lastName, email: row.email },
+    })
+  }
+
+  return NextResponse.json(teams.map(t => ({ ...t, players: playersByTeam[t.id] ?? [] })))
 }
 
 export async function POST(req: NextRequest) {
