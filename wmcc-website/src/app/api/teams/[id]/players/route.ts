@@ -23,14 +23,26 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const { playerId } = await req.json()
   if (!playerId) return NextResponse.json({ error: 'playerId required' }, { status: 400 })
 
+  // Verify player exists
+  const player = await prisma.player.findUnique({ where: { id: playerId } })
+  if (!player) return NextResponse.json({ error: 'Player not found' }, { status: 404 })
+
+  // Verify team exists
+  const team = await prisma.team.findUnique({ where: { id: params.id } })
+  if (!team) return NextResponse.json({ error: 'Team not found' }, { status: 404 })
+
   try {
     await prisma.team.update({
       where: { id: params.id },
       data: { players: { connect: { id: playerId } } },
     })
     return NextResponse.json({ ok: true })
-  } catch {
-    return NextResponse.json({ error: 'Failed to add player' }, { status: 500 })
+  } catch (error: any) {
+    console.error('Add player error:', error)
+    if (error.code === 'P2002') {
+      return NextResponse.json({ error: 'Player is already in this team' }, { status: 409 })
+    }
+    return NextResponse.json({ error: error.message ?? 'Failed to add player' }, { status: 500 })
   }
 }
 
