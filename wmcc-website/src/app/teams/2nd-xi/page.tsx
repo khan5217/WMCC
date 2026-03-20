@@ -22,16 +22,26 @@ export default async function SecondXIPage() {
     where: { type: 'SECOND_XI' },
     include: {
       captain: { include: { user: { select: { firstName: true, lastName: true } } } },
-      players: {
-        where: { isActive: true },
+    },
+    orderBy: { season: 'desc' },
+  })
+
+  // Fetch players via raw SQL (A=Team.id, B=Player.id in _TeamPlayers)
+  const playerIds = team
+    ? (await prisma.$queryRaw<{ playerId: string }[]>`
+        SELECT "B" as "playerId" FROM "_TeamPlayers" WHERE "A" = ${team.id}
+      `).map(r => r.playerId)
+    : []
+
+  const players = playerIds.length > 0
+    ? await prisma.player.findMany({
+        where: { id: { in: playerIds }, isActive: true },
         include: {
           user: { select: { firstName: true, lastName: true, avatarUrl: true } },
           performances: { select: { runs: true, wickets: true } },
         },
-      },
-    },
-    orderBy: { season: 'desc' },
-  })
+      })
+    : []
 
   return (
     <>
@@ -52,14 +62,14 @@ export default async function SecondXIPage() {
 
       <div className="section-padding bg-white">
         <div className="container-max">
-          {!team || team.players.length === 0 ? (
+          {!team || players.length === 0 ? (
             <div className="text-center py-16 text-gray-400">
               <Users className="h-12 w-12 mx-auto mb-3 opacity-30" />
               <p>No players listed in the 2nd XI yet.</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
-              {team.players.map((player) => {
+              {players.map((player) => {
                 const totalRuns = player.performances.reduce((s, p) => s + (p.runs ?? 0), 0)
                 const totalWkts = player.performances.reduce((s, p) => s + (p.wickets ?? 0), 0)
                 return (
