@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Mail, Phone, MapPin, Clock, Send } from 'lucide-react'
+import { Mail, Phone, MapPin, Send } from 'lucide-react'
 import axios from 'axios'
 import toast from 'react-hot-toast'
 
@@ -60,11 +60,6 @@ export default function ContactPage() {
                   title: 'Email',
                   lines: ['contact@wmccmk.com', 'contact@wmccmk.com'],
                   href: 'mailto:contact@wmccmk.com',
-                },
-                {
-                  icon: Clock,
-                  title: 'Office Hours',
-                  lines: ['Match days: 10am – 8pm', 'Nets: Tue & Thu 6:30pm'],
                 },
               ].map(({ icon: Icon, title, lines, href }) => (
                 <div key={title} className="flex gap-4">

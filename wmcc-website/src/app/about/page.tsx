@@ -1,12 +1,21 @@
 import type { Metadata } from 'next'
 import { MapPin, Phone, Mail, Users, Trophy, Heart, Shield } from 'lucide-react'
+import { prisma } from '@/lib/prisma'
+import Image from 'next/image'
+import { initials } from '@/lib/utils'
+
+export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'About Us',
   description: 'Learn about WMCC Milton Keynes Cricket Club — our history, values, ground, and committee.',
 }
 
-export default function AboutPage() {
+export default async function AboutPage() {
+  const committeeMembers = await prisma.committeeMember.findMany({
+    orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
+  })
+
   return (
     <>
       {/* Page header */}
@@ -101,29 +110,38 @@ export default function AboutPage() {
             <p className="section-subtitle">The people who keep WMCC running</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { role: 'Chairman', name: 'TBA', contact: '' },
-              { role: 'Club Secretary', name: 'TBA', contact: 'contact@wmccmk.com' },
-              { role: '1st XI Captain', name: 'TBA', contact: '' },
-              { role: '2nd XI Captain', name: 'TBA', contact: '' },
-              { role: 'Treasurer', name: 'TBA', contact: '' },
-              { role: 'Fixtures Secretary', name: 'TBA', contact: '' },
-              { role: 'Welfare Officer', name: 'TBA', contact: '' },
-              { role: 'Ground Manager', name: 'TBA', contact: '' },
-            ].map((member) => (
-              <div key={member.role} className="card p-6 text-center">
-                <div className="w-16 h-16 bg-green-100 rounded-full mx-auto mb-3 flex items-center justify-center">
-                  <Users className="h-8 w-8 text-cricket-green" />
+            {committeeMembers.length === 0 ? (
+              ['Chairman', 'Club Secretary', '1st XI Captain', '2nd XI Captain', 'Treasurer', 'Organiser', 'Selector'].map((role) => (
+                <div key={role} className="card p-6 text-center">
+                  <div className="w-16 h-16 bg-green-100 rounded-full mx-auto mb-3 flex items-center justify-center">
+                    <Users className="h-8 w-8 text-cricket-green" />
+                  </div>
+                  <div className="font-bold text-gray-900">TBA</div>
+                  <div className="text-sm text-cricket-green font-medium mt-0.5">{role}</div>
                 </div>
-                <div className="font-bold text-gray-900">{member.name}</div>
-                <div className="text-sm text-cricket-green font-medium mt-0.5">{member.role}</div>
-                {member.contact && (
-                  <a href={`mailto:${member.contact}`} className="text-xs text-gray-400 hover:text-cricket-green mt-1 block">
-                    {member.contact}
-                  </a>
-                )}
-              </div>
-            ))}
+              ))
+            ) : (
+              committeeMembers.map((member) => (
+                <div key={member.id} className="card p-6 text-center">
+                  <div className="w-16 h-16 rounded-full mx-auto mb-3 overflow-hidden bg-green-100 flex items-center justify-center">
+                    {member.avatarUrl ? (
+                      <Image src={member.avatarUrl} alt={member.name} width={64} height={64} className="object-cover w-16 h-16" />
+                    ) : (
+                      <span className="text-xl font-bold text-cricket-green">
+                        {initials(member.name.split(' ')[0], member.name.split(' ').slice(1).join(' '))}
+                      </span>
+                    )}
+                  </div>
+                  <div className="font-bold text-gray-900">{member.name || 'TBA'}</div>
+                  <div className="text-sm text-cricket-green font-medium mt-0.5">{member.role}</div>
+                  {member.email && (
+                    <a href={`mailto:${member.email}`} className="text-xs text-gray-400 hover:text-cricket-green mt-1 block truncate">
+                      {member.email}
+                    </a>
+                  )}
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>

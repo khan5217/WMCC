@@ -152,6 +152,16 @@ enum TeamType {
   SECOND_XI
 }
 
+model CommitteeMember {
+  id           String   @id @default(cuid())
+  name         String
+  role         String
+  avatarUrl    String?
+  email        String?
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+}
+
 model Team {
   id          String   @id @default(cuid())
   name        String

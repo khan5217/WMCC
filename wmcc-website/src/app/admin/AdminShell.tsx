@@ -19,6 +19,7 @@ const NAV = [
   { href: '/admin/members', icon: Users, label: 'Members' },
   { href: '/admin/membership-fees', icon: PoundSterling, label: 'Membership Fees' },
   { href: '/admin/match-fees', icon: Trophy, label: 'Match Fees' },
+  { href: '/admin/committee', icon: Users, label: 'Committee' },
   { href: '/admin/sponsors', icon: Star, label: 'Sponsors' },
   { href: '/admin/import', icon: Upload, label: 'CSV Import' },
   { href: '/admin/contacts', icon: Mail, label: 'Contact Messages' },
