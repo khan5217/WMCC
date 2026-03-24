@@ -3,7 +3,11 @@ import bcrypt from 'bcryptjs'
 import { cookies } from 'next/headers'
 import { prisma } from './prisma'
 
-const JWT_SECRET = process.env.JWT_SECRET!
+const _jwtSecret = process.env.JWT_SECRET
+if (!_jwtSecret || _jwtSecret.length < 32) {
+  throw new Error('JWT_SECRET environment variable is missing or too short (minimum 32 characters)')
+}
+const JWT_SECRET: string = _jwtSecret
 const JWT_EXPIRES_IN = '7d'
 const SESSION_COOKIE = 'wmcc_session'
 

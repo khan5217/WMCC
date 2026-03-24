@@ -10,6 +10,11 @@ export async function POST(req: NextRequest) {
     if (!filename || !contentType) {
       return NextResponse.json({ error: 'filename and contentType required' }, { status: 400 })
     }
+
+    const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+    if (!ALLOWED_TYPES.includes(contentType)) {
+      return NextResponse.json({ error: 'Invalid file type. Only JPEG, PNG, WebP, and GIF are allowed.' }, { status: 400 })
+    }
     const safe = filename.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9._-]/g, '')
     const key = `avatars/${ctx.userId}-${Date.now()}-${safe}`
     const uploadUrl = await getPresignedUploadUrl(key, contentType)

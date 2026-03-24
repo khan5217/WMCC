@@ -13,6 +13,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'filename and contentType are required' }, { status: 400 })
     }
 
+    const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+    const ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/webm']
+    const allowed = mediaType === 'VIDEO' ? ALLOWED_VIDEO_TYPES : ALLOWED_IMAGE_TYPES
+    if (!allowed.includes(contentType)) {
+      return NextResponse.json({ error: 'Invalid file type' }, { status: 400 })
+    }
+
     const safeName = filename.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9._-]/g, '')
     const folder = mediaType === 'VIDEO'
       ? 'gallery/videos'

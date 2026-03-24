@@ -21,6 +21,20 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'File, title, and category are required' }, { status: 400 })
       }
 
+      const ALLOWED_TYPES = [
+        'application/pdf',
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'text/plain',
+        'image/jpeg',
+        'image/png',
+      ]
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        return NextResponse.json({ error: 'Invalid file type' }, { status: 400 })
+      }
+
       const buffer = Buffer.from(await file.arrayBuffer())
       const safeName = file.name.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9._-]/g, '')
       const key = `documents/${Date.now()}-${safeName}`
