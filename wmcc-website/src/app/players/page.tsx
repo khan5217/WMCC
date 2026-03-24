@@ -96,7 +96,7 @@ export default async function PlayersPage() {
                             alt={`${player.user.firstName} ${player.user.lastName}`}
                             width={80}
                             height={80}
-                            className="object-cover w-full h-full"
+                            className="object-cover object-top w-full h-full"
                           />
                         ) : (
                           <span className="text-2xl font-bold text-cricket-green">

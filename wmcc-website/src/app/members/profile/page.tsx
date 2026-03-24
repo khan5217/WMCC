@@ -107,7 +107,7 @@ export default function EditProfilePage() {
           <div className="relative shrink-0">
             <div className="w-20 h-20 rounded-full overflow-hidden bg-green-100 flex items-center justify-center">
               {avatarUrl ? (
-                <Image src={avatarUrl} alt="Avatar" width={80} height={80} className="w-full h-full object-cover object-center" />
+                <Image src={avatarUrl} alt="Avatar" width={80} height={80} className="w-full h-full object-cover object-top" />
               ) : (
                 <span className="text-xl font-bold text-cricket-green">
                   {initials(profile.firstName, profile.lastName) || '?'}

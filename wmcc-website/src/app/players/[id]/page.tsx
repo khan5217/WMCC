@@ -97,7 +97,7 @@ export default async function PlayerProfilePage({ params }: Props) {
             {/* Avatar */}
             <div className="w-24 h-24 rounded-full overflow-hidden bg-white/20 border-4 border-white/30 flex items-center justify-center flex-shrink-0">
               {user.avatarUrl ? (
-                <Image src={user.avatarUrl} alt={fullName} width={96} height={96} className="object-cover w-full h-full" />
+                <Image src={user.avatarUrl} alt={fullName} width={96} height={96} className="object-cover object-top w-full h-full" />
               ) : (
                 <span className="text-3xl font-bold text-white">{initials(user.firstName, user.lastName)}</span>
               )}
