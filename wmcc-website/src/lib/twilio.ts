@@ -1,5 +1,6 @@
 import twilio from 'twilio'
 import { prisma } from './prisma'
+import crypto from 'crypto'
 
 const client = twilio(
   process.env.TWILIO_ACCOUNT_SID!,
@@ -10,7 +11,12 @@ const TWILIO_FROM = process.env.TWILIO_SENDER_ID!
 const OTP_EXPIRY_MINUTES = 10
 
 function generateOTP(): string {
-  return Math.floor(100000 + Math.random() * 900000).toString()
+  // crypto.randomInt is cryptographically secure, unlike Math.random()
+  return crypto.randomInt(100000, 1000000).toString()
+}
+
+function hashOTP(code: string): string {
+  return crypto.createHash('sha256').update(code).digest('hex')
 }
 
 export async function sendOTP(userId: string, phone: string): Promise<{ success: boolean; error?: string }> {
@@ -22,19 +28,20 @@ export async function sendOTP(userId: string, phone: string): Promise<{ success:
     })
 
     const code = generateOTP()
+    const codeHash = hashOTP(code)
     const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000)
 
-    // Store OTP in database
+    // Store the hash — raw code never persisted to DB
     await prisma.otpCode.create({
       data: {
         userId,
         phone,
-        code,
+        code: codeHash,
         expiresAt,
       },
     })
 
-    // Send SMS via Twilio
+    // Send the raw code via SMS
     await client.messages.create({
       body: `Your WMCC login code is: ${code}. Valid for ${OTP_EXPIRY_MINUTES} minutes. Do not share this code.`,
       from: TWILIO_FROM,
@@ -49,10 +56,12 @@ export async function sendOTP(userId: string, phone: string): Promise<{ success:
 }
 
 export async function verifyOTP(userId: string, code: string): Promise<boolean> {
+  const codeHash = hashOTP(code)
+
   const otp = await prisma.otpCode.findFirst({
     where: {
       userId,
-      code,
+      code: codeHash,
       used: false,
       expiresAt: { gt: new Date() },
     },

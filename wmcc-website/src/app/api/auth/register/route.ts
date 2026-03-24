@@ -12,8 +12,12 @@ const registerSchema = z.object({
   phone: z.string().regex(/^\+[1-9]\d{7,14}$/, 'Phone must be in international format e.g. +447911123456'),
   password: z
     .string()
-    .min(8)
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must contain uppercase, lowercase, and a number'),
+    .min(10, 'Password must be at least 10 characters')
+    .max(128, 'Password must be at most 128 characters')
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d])/,
+      'Password must contain uppercase, lowercase, a number, and a special character'
+    ),
   membershipTier: z.enum(['PLAYING_SENIOR', 'PLAYING_JUNIOR', 'SOCIAL', 'FAMILY']),
   dateOfBirth: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Invalid date format'),
 })

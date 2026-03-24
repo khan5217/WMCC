@@ -8,7 +8,7 @@ if (!_jwtSecret || _jwtSecret.length < 32) {
   throw new Error('JWT_SECRET environment variable is missing or too short (minimum 32 characters)')
 }
 const JWT_SECRET: string = _jwtSecret
-const JWT_EXPIRES_IN = '7d'
+const JWT_EXPIRES_IN = '24h'
 const SESSION_COOKIE = 'wmcc_session'
 
 export interface JWTPayload {
@@ -60,7 +60,7 @@ export async function getSessionUser() {
 }
 
 export async function createSession(userId: string): Promise<string> {
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+  const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
 
   const user = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } })
 
@@ -89,7 +89,7 @@ export function setSessionCookie(token: string) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60,
+    maxAge: 24 * 60 * 60,
     path: '/',
   })
 }
