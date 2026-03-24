@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { hashPassword } from '@/lib/auth'
+import { hashPassword, comparePassword } from '@/lib/auth'
 import { sendPasswordChangedAlert } from '@/lib/email'
 import crypto from 'crypto'
 import { z } from 'zod'
@@ -34,6 +34,10 @@ export async function POST(req: NextRequest) {
         { error: 'This reset link is invalid or has expired. Please request a new one.' },
         { status: 400 }
       )
+    }
+
+    if (resetToken.user.passwordHash && await comparePassword(password, resetToken.user.passwordHash)) {
+      return NextResponse.json({ error: 'New password must be different from your current password' }, { status: 400 })
     }
 
     const passwordHash = await hashPassword(password)
