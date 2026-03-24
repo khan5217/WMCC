@@ -280,27 +280,27 @@ export default function GalleryGrid({ albums, totalCount }: Props) {
           )}
 
           {/* Media */}
-          <div className="flex flex-col items-center justify-center w-full h-full px-16 sm:px-20">
+          <div className="flex flex-col items-center justify-center w-full h-full">
             {currentLbItem.mediaType === 'VIDEO' ? (
               <video
                 key={currentLbItem.id}
                 src={currentLbItem.url}
                 controls
                 autoPlay
-                className="max-h-[80vh] max-w-full rounded-lg"
+                className="w-full max-h-[80vh] sm:max-w-4xl object-contain"
               />
             ) : (
               <img
                 key={currentLbItem.id}
                 src={currentLbItem.url}
                 alt={currentLbItem.title}
-                className="max-h-[82vh] max-w-full object-contain rounded-sm select-none"
+                className="w-full h-auto max-h-[85vh] object-contain select-none"
                 draggable={false}
               />
             )}
 
             {/* Caption */}
-            <div className="mt-4 text-center max-w-lg px-4">
+            <div className="mt-3 text-center px-12 sm:px-16 max-w-lg">
               <p className="text-white font-semibold text-sm">{currentLbItem.title}</p>
               {currentLbItem.description && (
                 <p className="text-white/50 text-xs mt-1">{currentLbItem.description}</p>
