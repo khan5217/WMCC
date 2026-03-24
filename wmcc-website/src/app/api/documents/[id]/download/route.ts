@@ -28,8 +28,11 @@ export async function GET(
       return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 })
     }
 
-    // Extract S3 key from URL
-    const key = doc.fileUrl.split('.amazonaws.com/')[1] ?? doc.fileUrl
+    // Extract S3 key from either an S3 URL or a CloudFront URL
+    const key =
+      doc.fileUrl.split('.amazonaws.com/')[1] ??
+      doc.fileUrl.split('cloudfront.net/')[1] ??
+      doc.fileUrl
 
     try {
       const signedUrl = await getPresignedUrl(key, 300) // 5 minutes
