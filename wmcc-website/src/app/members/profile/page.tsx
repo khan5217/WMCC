@@ -105,15 +105,15 @@ export default function EditProfilePage() {
           <input ref={fileRef} type="file" accept="image/*" className="hidden"
             onChange={(e) => { const f = e.target.files?.[0]; if (f) handleAvatarUpload(f); e.target.value = '' }} />
           <div className="relative shrink-0">
-            {avatarUrl ? (
-              <Image src={avatarUrl} alt="Avatar" width={80} height={80} className="w-20 h-20 rounded-full object-cover" />
-            ) : (
-              <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
+            <div className="w-20 h-20 rounded-full overflow-hidden bg-green-100 flex items-center justify-center">
+              {avatarUrl ? (
+                <Image src={avatarUrl} alt="Avatar" width={80} height={80} className="w-full h-full object-cover object-center" />
+              ) : (
                 <span className="text-xl font-bold text-cricket-green">
                   {initials(profile.firstName, profile.lastName) || '?'}
                 </span>
-              </div>
-            )}
+              )}
+            </div>
           </div>
           <div>
             <div className="font-semibold text-gray-900 mb-1">Profile Photo</div>
