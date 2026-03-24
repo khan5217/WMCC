@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sendLoginAlert } from '@/lib/email'
+import { withAuth } from '@/lib/api-auth'
 
 export async function GET(req: NextRequest) {
+  return withAuth(req, async (ctx) => {
+  if (ctx.role !== 'ADMIN') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const secret = req.nextUrl.searchParams.get('secret')
-  if (secret !== process.env.TEST_EMAIL_SECRET) {
+  const testEmailSecret = process.env.TEST_EMAIL_SECRET
+  if (!testEmailSecret || secret !== testEmailSecret) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
@@ -19,4 +26,5 @@ export async function GET(req: NextRequest) {
   })
 
   return NextResponse.json({ ok: true, sentTo: to })
+  })
 }

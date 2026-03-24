@@ -12,6 +12,13 @@ export async function DELETE(req: NextRequest) {
     const id = searchParams.get('id')
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
 
+    const article = await prisma.newsArticle.findUnique({ where: { id }, select: { authorId: true } })
+    if (!article) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+
+    if (ctx.role !== 'ADMIN' && article.authorId !== ctx.userId) {
+      return NextResponse.json({ error: 'You can only delete your own articles' }, { status: 403 })
+    }
+
     await prisma.newsArticle.delete({ where: { id } })
     return NextResponse.json({ success: true })
   })

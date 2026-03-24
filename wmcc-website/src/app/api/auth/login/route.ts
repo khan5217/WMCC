@@ -14,7 +14,26 @@ const loginSchema = z.object({
 // preventing timing-based email enumeration attacks.
 const DUMMY_HASH = '$2a$12$dummy.hash.to.prevent.timing.attack.enumeration.xx'
 
+// Rate limiter: max 5 attempts per 15 minutes per IP
+const loginRateLimitMap = new Map<string, { count: number; resetAt: number }>()
+function isLoginRateLimited(ip: string): boolean {
+  const now = Date.now()
+  const entry = loginRateLimitMap.get(ip)
+  if (!entry || entry.resetAt < now) {
+    loginRateLimitMap.set(ip, { count: 1, resetAt: now + 15 * 60 * 1000 })
+    return false
+  }
+  if (entry.count >= 5) return true
+  entry.count++
+  return false
+}
+
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? req.headers.get('x-real-ip') ?? 'unknown'
+  if (isLoginRateLimited(ip)) {
+    return NextResponse.json({ error: 'Too many login attempts. Please wait 15 minutes.' }, { status: 429 })
+  }
+
   try {
     const body = await req.json()
     const { email, password } = loginSchema.parse(body)
@@ -56,7 +75,6 @@ export async function POST(req: NextRequest) {
         path: '/',
       })
 
-      const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? req.headers.get('x-real-ip') ?? 'Unknown'
       const ua = req.headers.get('user-agent') ?? 'Unknown'
       const time = new Date().toLocaleString('en-GB', { timeZone: 'Europe/London', dateStyle: 'full', timeStyle: 'short' })
       void sendLoginAlert(user.email, user.firstName, { time, ip, userAgent: ua })

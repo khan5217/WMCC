@@ -7,10 +7,29 @@ import { z } from 'zod'
 
 const schema = z.object({
   userId: z.string(),
-  code: z.string().length(6),
+  code: z.string().length(6).regex(/^\d{6}$/),
 })
 
+// Rate limiter: max 5 attempts per 10 minutes per IP
+const otpRateLimitMap = new Map<string, { count: number; resetAt: number }>()
+function isOtpRateLimited(ip: string): boolean {
+  const now = Date.now()
+  const entry = otpRateLimitMap.get(ip)
+  if (!entry || entry.resetAt < now) {
+    otpRateLimitMap.set(ip, { count: 1, resetAt: now + 10 * 60 * 1000 })
+    return false
+  }
+  if (entry.count >= 5) return true
+  entry.count++
+  return false
+}
+
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? req.headers.get('x-real-ip') ?? 'unknown'
+  if (isOtpRateLimited(ip)) {
+    return NextResponse.json({ error: 'Too many attempts. Please wait 10 minutes.' }, { status: 429 })
+  }
+
   try {
     const body = await req.json()
     const { userId, code } = schema.parse(body)
