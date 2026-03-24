@@ -13,6 +13,60 @@ interface FileEntry {
   status: 'pending' | 'uploading' | 'done' | 'error'
 }
 
+// Resize an image using canvas. If `square` is true, center-crops to a square first.
+async function resizeImage(file: File, maxDim: number, quality: number, square = false): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = new window.Image()
+    const objectUrl = URL.createObjectURL(file)
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl)
+      const { naturalWidth: w, naturalHeight: h } = img
+
+      // Source rect — center-crop to square if requested
+      let sx = 0, sy = 0, sw = w, sh = h
+      if (square) {
+        const size = Math.min(w, h)
+        sx = (w - size) / 2
+        sy = (h - size) / 2
+        sw = size
+        sh = size
+      }
+
+      const scale = Math.min(1, maxDim / Math.max(sw, sh))
+      const dw = Math.round(sw * scale)
+      const dh = Math.round(sh * scale)
+
+      const canvas = document.createElement('canvas')
+      canvas.width = dw
+      canvas.height = dh
+      canvas.getContext('2d')!.drawImage(img, sx, sy, sw, sh, 0, 0, dw, dh)
+      canvas.toBlob(
+        (blob) => (blob ? resolve(blob) : reject(new Error('Canvas toBlob failed'))),
+        'image/jpeg',
+        quality,
+      )
+    }
+    img.onerror = reject
+    img.src = objectUrl
+  })
+}
+
+async function presign(filename: string, contentType: string, mediaType: string, thumbnail = false) {
+  const { data } = await axios.post('/api/gallery/presign', { filename, contentType, mediaType, thumbnail })
+  return data as { uploadUrl: string; publicUrl: string }
+}
+
+async function putToS3(uploadUrl: string, body: Blob, contentType: string) {
+  await fetch(uploadUrl, {
+    method: 'PUT',
+    body,
+    headers: {
+      'Content-Type': contentType,
+      'Cache-Control': 'max-age=31536000, immutable',
+    },
+  })
+}
+
 export default function NewGalleryItemPage() {
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
@@ -37,7 +91,6 @@ export default function NewGalleryItemPage() {
       status: 'pending',
     }))
     setEntries((prev) => [...prev, ...newEntries])
-    // reset so the same files can be re-added if needed
     e.target.value = ''
   }
 
@@ -68,22 +121,41 @@ export default function NewGalleryItemPage() {
       if (entry.status === 'done') { successCount++; continue }
       updateStatus(i, 'uploading')
       try {
-        const { data: { uploadUrl, publicUrl } } = await axios.post('/api/gallery/presign', {
-          filename: entry.file.name,
-          contentType: entry.file.type,
-          mediaType: form.mediaType,
-        })
+        const isPhoto = form.mediaType === 'PHOTO' && entry.file.type.startsWith('image/')
+        let displayUrl: string
+        let thumbnailUrl: string | null = null
 
-        await fetch(uploadUrl, {
-          method: 'PUT',
-          body: entry.file,
-          headers: { 'Content-Type': entry.file.type },
-        })
+        if (isPhoto) {
+          // Resize display version (max 2048px, 85% quality) and thumbnail (600px square, 75%)
+          const [displayBlob, thumbBlob] = await Promise.all([
+            resizeImage(entry.file, 2048, 0.85),
+            resizeImage(entry.file, 600, 0.75, true),
+          ])
 
-        // Use form title for single file; fall back to filename (without extension) for batch
+          const [displayPresign, thumbPresign] = await Promise.all([
+            presign(`${entry.file.name.replace(/\.[^/.]+$/, '')}.jpg`, 'image/jpeg', form.mediaType),
+            presign(`${entry.file.name.replace(/\.[^/.]+$/, '')}-thumb.jpg`, 'image/jpeg', form.mediaType, true),
+          ])
+
+          await Promise.all([
+            putToS3(displayPresign.uploadUrl, displayBlob, 'image/jpeg'),
+            putToS3(thumbPresign.uploadUrl, thumbBlob, 'image/jpeg'),
+          ])
+
+          displayUrl = displayPresign.publicUrl
+          thumbnailUrl = thumbPresign.publicUrl
+        } else {
+          // Videos — upload as-is
+          const { uploadUrl, publicUrl } = await presign(entry.file.name, entry.file.type, form.mediaType)
+          await putToS3(uploadUrl, entry.file, entry.file.type)
+          displayUrl = publicUrl
+        }
+
         const title = entries.length === 1 && form.title
           ? form.title
-          : (form.title ? `${form.title} – ${entry.file.name.replace(/\.[^/.]+$/, '')}` : entry.file.name.replace(/\.[^/.]+$/, ''))
+          : (form.title
+            ? `${form.title} – ${entry.file.name.replace(/\.[^/.]+$/, '')}`
+            : entry.file.name.replace(/\.[^/.]+$/, ''))
 
         await axios.post('/api/gallery', {
           title,
@@ -91,7 +163,8 @@ export default function NewGalleryItemPage() {
           mediaType: form.mediaType,
           albumName: form.albumName,
           isFeatured: form.isFeatured,
-          url: publicUrl,
+          url: displayUrl,
+          thumbnailUrl,
         })
 
         updateStatus(i, 'done')
@@ -122,6 +195,10 @@ export default function NewGalleryItemPage() {
         <h1 className="text-2xl font-bold text-gray-900 font-serif">Add Media</h1>
       </div>
 
+      <div className="mb-4 bg-blue-50 border border-blue-100 rounded-lg px-4 py-3 text-xs text-blue-700">
+        Photos are automatically resized and compressed before upload — display version max 2048px, thumbnail 600×600 crop. This keeps the gallery fast.
+      </div>
+
       <form onSubmit={handleSubmit} className="card p-6 space-y-5">
         {/* Media Type */}
         <div>
@@ -134,10 +211,7 @@ export default function NewGalleryItemPage() {
                   name="mediaType"
                   value={type}
                   checked={form.mediaType === type}
-                  onChange={() => {
-                    set('mediaType', type)
-                    setEntries([])
-                  }}
+                  onChange={() => { set('mediaType', type); setEntries([]) }}
                 />
                 <span className="text-sm text-gray-700">{type === 'PHOTO' ? 'Photo' : 'Video'}</span>
               </label>
@@ -169,7 +243,6 @@ export default function NewGalleryItemPage() {
             onChange={handleFileChange}
           />
 
-          {/* Selected files list */}
           {entries.length > 0 && (
             <ul className="mt-3 space-y-2">
               {entries.map((entry, idx) => (
@@ -189,7 +262,7 @@ export default function NewGalleryItemPage() {
                   }`}>
                     {entry.status === 'done' ? '✓ Done' :
                      entry.status === 'error' ? '✗ Error' :
-                     entry.status === 'uploading' ? 'Uploading…' : 'Pending'}
+                     entry.status === 'uploading' ? 'Resizing & uploading…' : 'Pending'}
                   </span>
                   {entry.status !== 'uploading' && entry.status !== 'done' && (
                     <button type="button" onClick={() => removeEntry(idx)} className="text-gray-400 hover:text-red-500">
@@ -257,7 +330,7 @@ export default function NewGalleryItemPage() {
         <div className="flex gap-3 pt-2">
           <button type="submit" disabled={loading || !pendingCount} className="btn-primary">
             {loading
-              ? `Uploading ${entries.filter((e) => e.status === 'uploading').map((_, i) => i + 1)[0] ?? '…'}/${entries.length}`
+              ? `Processing ${entries.filter((e) => e.status === 'uploading').map((_, i) => i + 1)[0] ?? '…'}/${entries.length}`
               : `Upload ${pendingCount || entries.length} File${entries.length !== 1 ? 's' : ''}`}
           </button>
           <Link href="/admin/gallery" className="btn-secondary">Cancel</Link>
