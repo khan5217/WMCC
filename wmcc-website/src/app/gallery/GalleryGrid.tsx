@@ -49,7 +49,7 @@ export default function GalleryGrid({ albums }: Props) {
   return (
     <>
       <div className="space-y-14">
-        {Object.entries(albums).map(([albumName, albumItems]) => (
+        {Object.entries(albums).map(([albumName, albumItems], albumIdx) => (
           <div key={albumName}>
             <div className="flex items-center gap-3 mb-6">
               <span className="w-1 h-7 bg-cricket-green rounded-full" />
@@ -57,7 +57,10 @@ export default function GalleryGrid({ albums }: Props) {
               <span className="text-sm text-gray-400">({albumItems.length} photos)</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-              {albumItems.map((item) => (
+              {albumItems.map((item, itemIdx) => {
+                // Prioritise first 8 images (above-fold on most screens)
+                const isPriority = albumIdx === 0 && itemIdx < 8
+                return (
                 <div
                   key={item.id}
                   onClick={() => open(item)}
@@ -74,10 +77,11 @@ export default function GalleryGrid({ albums }: Props) {
                       src={item.thumbnailUrl ?? item.url}
                       alt={item.title}
                       fill
+                      sizes="(min-width: 768px) 25vw, 50vw"
+                      priority={isPriority}
                       className="object-cover group-hover:scale-105 transition-transform duration-500"
                     />
                   )}
-                  {/* Always visible on touch devices, hover-only on desktop */}
                   <div className="absolute inset-0 bg-black/30 sm:bg-black/0 sm:group-hover:bg-black/40 transition-all duration-300 flex items-end">
                     <div className="p-2 text-white text-xs font-medium sm:opacity-0 sm:group-hover:opacity-100 transition-opacity line-clamp-2">
                       {item.title}
@@ -89,7 +93,8 @@ export default function GalleryGrid({ albums }: Props) {
                     </div>
                   )}
                 </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         ))}

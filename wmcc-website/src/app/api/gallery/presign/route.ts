@@ -8,13 +8,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { filename, contentType, mediaType } = await req.json()
+    const { filename, contentType, mediaType, thumbnail } = await req.json()
     if (!filename || !contentType) {
       return NextResponse.json({ error: 'filename and contentType are required' }, { status: 400 })
     }
 
     const safeName = filename.replace(/\s+/g, '-').replace(/[^a-zA-Z0-9._-]/g, '')
-    const folder = mediaType === 'VIDEO' ? 'gallery/videos' : 'gallery/photos'
+    const folder = mediaType === 'VIDEO'
+      ? 'gallery/videos'
+      : thumbnail
+        ? 'gallery/thumbnails'
+        : 'gallery/photos'
     const key = `${folder}/${Date.now()}-${safeName}`
 
     const uploadUrl = await getPresignedUploadUrl(key, contentType)
