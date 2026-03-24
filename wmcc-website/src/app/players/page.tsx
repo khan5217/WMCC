@@ -7,7 +7,7 @@ import { Users } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Players',
-  description: 'Meet the WMCC Milton Keynes Cricket Club squad — 1st XI and 2nd XI player profiles.',
+  description: 'Meet the WMCC Milton Keynes Cricket Club registered players.',
 }
 
 export const dynamic = 'force-dynamic'
@@ -50,39 +50,25 @@ export default async function PlayersPage() {
     return { ...p, totalRuns, avgRuns, totalWkts, matchCount: innings.length }
   })
 
-  const firstXI = enriched.filter((p) => p.teams.some((t) => t.type === 'FIRST_XI'))
-  const secondXI = enriched.filter((p) => p.teams.some((t) => t.type === 'SECOND_XI') && !firstXI.some((f) => f.id === p.id))
-  const unassigned = enriched.filter((p) => p.teams.length === 0)
-
   return (
     <>
       <div className="hero-gradient pt-24 pb-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-4xl md:text-5xl font-bold text-white font-serif mb-3">Our Players</h1>
-          <p className="text-xl text-green-100">The WMCC squad — {players.length} active players</p>
+          <p className="text-xl text-green-100">The WMCC squad — {players.length} registered players</p>
         </div>
       </div>
 
       <div className="section-padding bg-white">
         <div className="container-max">
-          {[
-            { label: '1st XI Squad', players: firstXI },
-            { label: '2nd XI Squad', players: secondXI },
-            ...(unassigned.length > 0 ? [{ label: 'Registered Players', players: unassigned }] : []),
-          ].map(({ label, players: group }) => (
-            <div key={label} className="mb-14">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <span className="w-1 h-8 bg-cricket-green rounded-full inline-block" />
-                {label}
-              </h2>
-              {group.length === 0 ? (
-                <div className="text-center py-10 text-gray-400">
-                  <Users className="h-10 w-10 mx-auto mb-2 opacity-30" />
-                  <p>No players in this squad yet</p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
-                  {group.map((player) => (
+          {enriched.length === 0 ? (
+            <div className="text-center py-10 text-gray-400">
+              <Users className="h-10 w-10 mx-auto mb-2 opacity-30" />
+              <p>No players registered yet</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+              {enriched.map((player) => (
                     <Link
                       key={player.id}
                       href={`/players/${player.id}`}
@@ -128,11 +114,9 @@ export default async function PlayersPage() {
                         </div>
                       </div>
                     </Link>
-                  ))}
-                </div>
-              )}
+              ))}
             </div>
-          ))}
+          )}
         </div>
       </div>
     </>
