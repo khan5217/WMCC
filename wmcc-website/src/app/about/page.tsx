@@ -14,6 +14,9 @@ export const metadata: Metadata = {
 export default async function AboutPage() {
   const committeeMembers = await prisma.committeeMember.findMany({
     orderBy: [{ displayOrder: 'asc' }, { createdAt: 'asc' }],
+    include: {
+      user: { select: { firstName: true, lastName: true, email: true, avatarUrl: true } },
+    },
   })
 
   return (
@@ -124,21 +127,19 @@ export default async function AboutPage() {
               committeeMembers.map((member) => (
                 <div key={member.id} className="card p-6 text-center">
                   <div className="w-16 h-16 rounded-full mx-auto mb-3 overflow-hidden bg-green-100 flex items-center justify-center">
-                    {member.avatarUrl ? (
-                      <Image src={member.avatarUrl} alt={member.name} width={64} height={64} className="object-cover w-16 h-16" />
+                    {member.user.avatarUrl ? (
+                      <Image src={member.user.avatarUrl} alt={member.user.firstName} width={64} height={64} className="object-cover w-16 h-16" />
                     ) : (
                       <span className="text-xl font-bold text-cricket-green">
-                        {initials(member.name.split(' ')[0], member.name.split(' ').slice(1).join(' '))}
+                        {initials(member.user.firstName, member.user.lastName)}
                       </span>
                     )}
                   </div>
-                  <div className="font-bold text-gray-900">{member.name || 'TBA'}</div>
-                  <div className="text-sm text-cricket-green font-medium mt-0.5">{member.role}</div>
-                  {member.email && (
-                    <a href={`mailto:${member.email}`} className="text-xs text-gray-400 hover:text-cricket-green mt-1 block truncate">
-                      {member.email}
-                    </a>
-                  )}
+                  <div className="font-bold text-gray-900">{member.user.firstName} {member.user.lastName}</div>
+                  <div className="text-sm text-cricket-green font-medium mt-0.5">{member.title}</div>
+                  <a href={`mailto:${member.user.email}`} className="text-xs text-gray-400 hover:text-cricket-green mt-1 block truncate">
+                    {member.user.email}
+                  </a>
                 </div>
               ))
             )}

@@ -64,6 +64,7 @@ model User {
   passwordResetTokens  PasswordResetToken[]
   newsArticles     NewsArticle[]    @relation("Author")
   galleryItems     GalleryItem[]    @relation("UploadedBy")
+  committeeRole    CommitteeMember?
 
   @@index([email])
   @@index([phone])
@@ -154,12 +155,12 @@ enum TeamType {
 
 model CommitteeMember {
   id           String   @id @default(cuid())
-  name         String
-  role         String
-  avatarUrl    String?
-  email        String?
+  userId       String   @unique
+  title        String
   displayOrder Int      @default(0)
   createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Team {
