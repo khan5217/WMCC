@@ -153,7 +153,7 @@ export default function AboutPage() {
                 </li>
                 <li className="flex items-center gap-3">
                   <Phone className="h-5 w-5 text-cricket-green" />
-                  <a href="tel:+447000000000" className="text-gray-600 hover:text-cricket-green">+44 7000 000000</a>
+                  <a href="tel:+447700102848" className="text-gray-600 hover:text-cricket-green">+44 7700 102848</a>
                 </li>
               </ul>
             </div>

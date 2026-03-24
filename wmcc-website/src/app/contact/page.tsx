@@ -52,8 +52,8 @@ export default function ContactPage() {
                 {
                   icon: Phone,
                   title: 'Phone',
-                  lines: ['+44 7000 000000'],
-                  href: 'tel:+4470000000000',
+                  lines: ['+44 7700 102848'],
+                  href: 'tel:+447700102848',
                 },
                 {
                   icon: Mail,
@@ -120,7 +120,7 @@ export default function ContactPage() {
                       <input
                         className="input"
                         type="tel"
-                        placeholder="+44 7000 000000"
+                        placeholder="+447700102848"
                         value={form.phone}
                         onChange={(e) => setForm({ ...form, phone: e.target.value })}
                       />
