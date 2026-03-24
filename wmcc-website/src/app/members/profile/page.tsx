@@ -1,16 +1,21 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import { User, Lock, ArrowLeft } from 'lucide-react'
+import { User, Lock, ArrowLeft, Camera } from 'lucide-react'
+import { initials } from '@/lib/utils'
 
 export default function EditProfilePage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
+  const fileRef = useRef<HTMLInputElement>(null)
 
   const [profile, setProfile] = useState({ firstName: '', lastName: '', phone: '' })
   const [passwords, setPasswords] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' })
@@ -20,6 +25,7 @@ export default function EditProfilePage() {
       .then((res) => {
         const u = res.data.user
         setProfile({ firstName: u.firstName, lastName: u.lastName, phone: u.phone ?? '' })
+        setAvatarUrl(u.avatarUrl ?? null)
       })
       .catch(() => router.push('/members/login'))
       .finally(() => setFetching(false))
@@ -35,6 +41,21 @@ export default function EditProfilePage() {
       toast.error(err.response?.data?.error ?? 'Update failed')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleAvatarUpload = async (file: File) => {
+    setUploadingAvatar(true)
+    try {
+      const { data } = await axios.post('/api/members/avatar', { filename: file.name, contentType: file.type })
+      await fetch(data.uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': file.type } })
+      await axios.patch('/api/members/avatar', { avatarUrl: data.publicUrl })
+      setAvatarUrl(data.publicUrl)
+      toast.success('Photo updated!')
+    } catch {
+      toast.error('Failed to upload photo')
+    } finally {
+      setUploadingAvatar(false)
     }
   }
 
@@ -79,6 +100,36 @@ export default function EditProfilePage() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+        {/* Avatar */}
+        <div className="card p-5 sm:p-7 flex items-center gap-5">
+          <input ref={fileRef} type="file" accept="image/*" className="hidden"
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) handleAvatarUpload(f); e.target.value = '' }} />
+          <div className="relative shrink-0">
+            {avatarUrl ? (
+              <Image src={avatarUrl} alt="Avatar" width={72} height={72} className="w-18 h-18 rounded-full object-cover" />
+            ) : (
+              <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                <span className="text-xl font-bold text-cricket-green">
+                  {initials(profile.firstName, profile.lastName) || '?'}
+                </span>
+              </div>
+            )}
+          </div>
+          <div>
+            <div className="font-semibold text-gray-900 mb-1">Profile Photo</div>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploadingAvatar}
+              className="flex items-center gap-2 text-sm border border-gray-200 hover:border-cricket-green text-gray-600 hover:text-cricket-green px-3 py-1.5 rounded-lg transition-colors"
+            >
+              <Camera className="h-4 w-4" />
+              {uploadingAvatar ? 'Uploading...' : 'Upload Photo'}
+            </button>
+            <p className="text-xs text-gray-400 mt-1">JPG or PNG. Shown on the club committee page.</p>
+          </div>
+        </div>
+
         {/* Personal info */}
         <div className="card p-5 sm:p-7">
           <h2 className="font-bold text-gray-900 text-lg mb-5 flex items-center gap-2">

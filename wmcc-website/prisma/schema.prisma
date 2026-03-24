@@ -64,6 +64,7 @@ model User {
   passwordResetTokens  PasswordResetToken[]
   newsArticles     NewsArticle[]    @relation("Author")
   galleryItems     GalleryItem[]    @relation("UploadedBy")
+  committeeRole    CommitteeMember?
 
   @@index([email])
   @@index([phone])
@@ -150,6 +151,16 @@ enum PaymentStatus {
 enum TeamType {
   FIRST_XI
   SECOND_XI
+}
+
+model CommitteeMember {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  title        String
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Team {
