@@ -126,9 +126,9 @@ export default async function AboutPage() {
             ) : (
               committeeMembers.map((member) => (
                 <div key={member.id} className="card p-6 text-center">
-                  <div className="w-16 h-16 rounded-full mx-auto mb-3 overflow-hidden bg-green-100 flex items-center justify-center">
+                  <div className="w-20 h-20 rounded-full mx-auto mb-3 overflow-hidden bg-green-100 flex items-center justify-center">
                     {member.user.avatarUrl ? (
-                      <Image src={member.user.avatarUrl} alt={member.user.firstName} width={64} height={64} className="object-cover w-16 h-16" />
+                      <Image src={member.user.avatarUrl} alt={member.user.firstName} width={80} height={80} className="object-cover w-20 h-20" />
                     ) : (
                       <span className="text-xl font-bold text-cricket-green">
                         {initials(member.user.firstName, member.user.lastName)}
