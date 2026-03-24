@@ -9,8 +9,12 @@ const schema = z.object({
   token: z.string().min(1),
   password: z
     .string()
-    .min(8)
-    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, 'Password must contain uppercase, lowercase, and a number'),
+    .min(10, 'Password must be at least 10 characters')
+    .max(128, 'Password must be at most 128 characters')
+    .regex(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d])/,
+      'Password must contain uppercase, lowercase, a number, and a special character'
+    ),
 })
 
 export async function POST(req: NextRequest) {
