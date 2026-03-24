@@ -25,7 +25,7 @@ export function HeroSection({ upcomingMatch }: { upcomingMatch?: Match }) {
 
   return (
     <section
-      className="h-[100svh] md:min-h-[85vh] md:h-[85vh] flex flex-col md:flex-row md:items-center relative overflow-hidden pt-24"
+      className="h-[100svh] md:h-auto md:min-h-[85vh] flex flex-col md:flex-row md:items-center relative overflow-hidden pt-24"
       style={{
         backgroundImage: 'url(https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=2560&q=80)',
         backgroundSize: 'cover',
