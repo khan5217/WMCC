@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { withAuth } from '@/lib/api-auth'
+import { logAudit } from '@/lib/audit'
 
 export async function PATCH(req: NextRequest, { params }: { params: { userId: string } }) {
-  return withAuth(req, async () => {
+  return withAuth(req, async (ctx) => {
     const { season, status, paymentChannel, amount, notes } = await req.json()
 
     if (!season || !status) {
@@ -53,6 +54,15 @@ export async function PATCH(req: NextRequest, { params }: { params: { userId: st
     await prisma.user.update({
       where: { id: params.userId },
       data: { membershipStatus: status === 'PAID' ? 'ACTIVE' : 'PENDING' },
+    })
+
+    void logAudit({
+      actorId: ctx.userId,
+      action: 'MEMBERSHIP_FEE_UPDATED',
+      entity: 'Membership',
+      entityId: membership.id,
+      details: { userId: params.userId, season, status, paymentChannel },
+      ipAddress: req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? undefined,
     })
 
     return NextResponse.json(membership)

@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
-import { Users, Trophy, Newspaper, Camera, FileText, Mail, TrendingUp, AlertCircle } from 'lucide-react'
+import { Users, Trophy, Newspaper, Camera, FileText, Mail, TrendingUp, AlertCircle, ClipboardList } from 'lucide-react'
 
 async function getAdminStats() {
   const [players, matches, news, members, contacts, pendingMembers] = await Promise.all([
@@ -60,6 +60,7 @@ export default async function AdminDashboard() {
             { href: '/admin/news/new', label: 'Write Article', icon: Newspaper },
             { href: '/admin/players/new', label: 'Add Player', icon: Users },
             { href: '/admin/documents/new', label: 'Upload Document', icon: FileText },
+            { href: '/admin/audit-log', label: 'Audit Log', icon: ClipboardList },
           ].map(({ href, label, icon: Icon }) => (
             <Link
               key={href}

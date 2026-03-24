@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { hashPassword } from '@/lib/auth'
 import { sendOTP } from '@/lib/twilio'
-import { sendWelcomeEmail, sendNewMemberAlert } from '@/lib/email'
+import { sendWelcomeEmail, sendNewMemberAlert, sendEmailVerification } from '@/lib/email'
 import { z } from 'zod'
+import crypto from 'crypto'
 
 const registerSchema = z.object({
   firstName: z.string().min(1).max(50),
@@ -53,6 +54,18 @@ export async function POST(req: NextRequest) {
         dateOfBirth: new Date(data.dateOfBirth),
       },
     })
+
+    // Create email verification token and send verification email (non-blocking)
+    const emailToken = crypto.randomBytes(32).toString('hex')
+    await prisma.emailVerificationToken.create({
+      data: {
+        userId: user.id,
+        token: emailToken,
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      },
+    })
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://wmccmk.co.uk'
+    void sendEmailVerification(user.email, user.firstName, `${baseUrl}/api/auth/verify-email?token=${emailToken}`)
 
     // Send welcome email (non-blocking)
     void sendWelcomeEmail(user.email, user.firstName, user.membershipTier ?? data.membershipTier)

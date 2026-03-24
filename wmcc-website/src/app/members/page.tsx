@@ -4,7 +4,8 @@ import Image from 'next/image'
 import { getSessionUser } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { formatDate, initials } from '@/lib/utils'
-import { User, FileText, CreditCard, Settings, Trophy, Shield } from 'lucide-react'
+import { User, FileText, CreditCard, Settings, Trophy, Shield, MailWarning } from 'lucide-react'
+import EmailVerificationBanner from '@/components/EmailVerificationBanner'
 
 export default async function MembersDashboardPage() {
   const sessionUser = await getSessionUser()
@@ -77,6 +78,12 @@ export default async function MembersDashboardPage() {
           </div>
         </div>
       </div>
+
+      {!user.emailVerified && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+          <EmailVerificationBanner />
+        </div>
+      )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
