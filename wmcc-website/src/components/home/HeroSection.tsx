@@ -55,7 +55,7 @@ export function HeroSection({ upcomingMatch }: { upcomingMatch?: Match }) {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-5xl sm:text-5xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white font-serif leading-tight mb-3 md:mb-6"
+            className="text-5xl sm:text-5xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white font-serif leading-tight mb-3 md:mb-6"
           >
             Welcome to
             <br />
