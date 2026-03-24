@@ -130,7 +130,7 @@ export default function AdminCommitteePage() {
             <div key={m.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 text-center">
               <div className="w-20 h-20 rounded-full mx-auto mb-3 overflow-hidden bg-green-100 flex items-center justify-center">
                 {m.user.avatarUrl ? (
-                  <Image src={m.user.avatarUrl} alt={m.user.firstName} width={80} height={80} className="object-cover w-20 h-20" />
+                  <Image src={m.user.avatarUrl} alt={m.user.firstName} width={80} height={80} className="w-full h-full object-cover object-center" />
                 ) : (
                   <span className="text-xl font-bold text-cricket-green">
                     {initials(m.user.firstName, m.user.lastName)}

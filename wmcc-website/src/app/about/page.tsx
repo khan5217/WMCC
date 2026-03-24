@@ -128,7 +128,7 @@ export default async function AboutPage() {
                 <div key={member.id} className="card p-6 text-center">
                   <div className="w-20 h-20 rounded-full mx-auto mb-3 overflow-hidden bg-green-100 flex items-center justify-center">
                     {member.user.avatarUrl ? (
-                      <Image src={member.user.avatarUrl} alt={member.user.firstName} width={80} height={80} className="object-cover w-20 h-20" />
+                      <Image src={member.user.avatarUrl} alt={member.user.firstName} width={80} height={80} className="w-full h-full object-cover object-center" />
                     ) : (
                       <span className="text-xl font-bold text-cricket-green">
                         {initials(member.user.firstName, member.user.lastName)}
