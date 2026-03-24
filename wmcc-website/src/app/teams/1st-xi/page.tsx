@@ -80,7 +80,7 @@ export default async function FirstXIPage() {
                   >
                     <div className="w-20 h-20 rounded-full mx-auto mb-3 overflow-hidden bg-green-100 flex items-center justify-center">
                       {player.user.avatarUrl ? (
-                        <Image src={player.user.avatarUrl} alt="" width={80} height={80} className="object-cover" />
+                        <Image src={player.user.avatarUrl} alt="" width={80} height={80} className="w-full h-full object-cover object-top" />
                       ) : (
                         <span className="text-2xl font-bold text-cricket-green">
                           {initials(player.user.firstName, player.user.lastName)}
