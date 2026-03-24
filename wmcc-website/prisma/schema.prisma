@@ -51,26 +51,43 @@ model User {
   membershipExpiry DateTime?
   dateOfBirth      DateTime?
   isVerified       Boolean          @default(false)
+  emailVerified    Boolean          @default(false)
   twoFactorEnabled Boolean          @default(true)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 
   // Relations
-  player           Player?
-  memberships      Membership[]
-  documents        Document[]       @relation("UploadedBy")
-  otpCodes             OtpCode[]
-  sessions             Session[]
-  passwordResetTokens  PasswordResetToken[]
-  newsArticles     NewsArticle[]    @relation("Author")
-  galleryItems     GalleryItem[]    @relation("UploadedBy")
-  committeeRole    CommitteeMember?
+  player                    Player?
+  memberships               Membership[]
+  documents                 Document[]                @relation("UploadedBy")
+  otpCodes                  OtpCode[]
+  sessions                  Session[]
+  passwordResetTokens       PasswordResetToken[]
+  emailVerificationTokens   EmailVerificationToken[]
+  newsArticles              NewsArticle[]             @relation("Author")
+  galleryItems              GalleryItem[]             @relation("UploadedBy")
+  committeeRole             CommitteeMember?
+  auditLogs                 AuditLog[]                @relation("AuditActor")
 
   @@index([email])
   @@index([phone])
 }
 
 model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([userId])
+}
+
+model EmailVerificationToken {
   id        String   @id @default(cuid())
   userId    String
   token     String   @unique
@@ -517,4 +534,25 @@ model MatchFeeAssignment {
   @@index([matchId])
   @@index([playerId])
   @@index([paymentToken])
+}
+
+// ─────────────────────────────────────────────
+// AUDIT LOG
+// ─────────────────────────────────────────────
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?  // null = system
+  action    String   // e.g. "MEMBER_ROLE_CHANGED"
+  entity    String   // e.g. "User", "Player", "Match"
+  entityId  String?
+  details   Json?    // before/after snapshot
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  actor User? @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([actorId])
+  @@index([entity, entityId])
+  @@index([createdAt])
 }

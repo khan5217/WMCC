@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verifyToken } from '@/lib/auth'
+import { logAudit } from '@/lib/audit'
 import { z } from 'zod'
 
 function getAuth(req: NextRequest) {
@@ -53,6 +54,14 @@ export async function PATCH(
       where: { id: params.assignmentId },
       data: updateData,
     })
+    void logAudit({
+      actorId: adminUser.id,
+      action: 'MATCH_FEE_UPDATED',
+      entity: 'MatchFeeAssignment',
+      entityId: params.assignmentId,
+      details: { matchId: params.matchId, ...data },
+      ipAddress: req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? undefined,
+    })
     return NextResponse.json(assignment)
   } catch (err: any) {
     if (err.code === 'P2025') return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -69,6 +78,14 @@ export async function DELETE(
 
   try {
     await prisma.matchFeeAssignment.delete({ where: { id: params.assignmentId } })
+    void logAudit({
+      actorId: adminUser.id,
+      action: 'MATCH_FEE_DELETED',
+      entity: 'MatchFeeAssignment',
+      entityId: params.assignmentId,
+      details: { matchId: params.matchId },
+      ipAddress: req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? undefined,
+    })
     return NextResponse.json({ ok: true })
   } catch (err: any) {
     if (err.code === 'P2025') return NextResponse.json({ error: 'Not found' }, { status: 404 })

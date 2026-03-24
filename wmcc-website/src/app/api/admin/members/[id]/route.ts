@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { withAuth } from '@/lib/api-auth'
+import { logAudit } from '@/lib/audit'
 import { z } from 'zod'
 
 const SUPER_ADMIN_EMAIL = process.env.SUPER_ADMIN_EMAIL!
@@ -48,7 +49,19 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         return NextResponse.json({ error: 'Only an admin can assign the ADMIN role' }, { status: 403 })
       }
 
+      const before = await prisma.user.findUnique({
+        where: { id: params.id },
+        select: { role: true, membershipStatus: true, membershipTier: true },
+      })
       const user = await prisma.user.update({ where: { id: params.id }, data: body })
+      void logAudit({
+        actorId: ctx.userId,
+        action: 'MEMBER_UPDATED',
+        entity: 'User',
+        entityId: params.id,
+        details: { before, after: body },
+        ipAddress: req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? undefined,
+      })
       return NextResponse.json({ ok: true, user })
     } catch (err: any) {
       if (err.name === 'ZodError') {
@@ -79,6 +92,14 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
     try {
       await prisma.user.delete({ where: { id: params.id } })
+      void logAudit({
+        actorId: ctx.userId,
+        action: 'MEMBER_DELETED',
+        entity: 'User',
+        entityId: params.id,
+        details: { email: target.email },
+        ipAddress: req.headers.get('x-forwarded-for')?.split(',')[0].trim() ?? undefined,
+      })
       return NextResponse.json({ ok: true })
     } catch (err: any) {
       if (err.code === 'P2025') {

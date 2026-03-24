@@ -931,3 +931,95 @@ export async function sendMatchFeeReminder(
     return false
   }
 }
+
+// ─── Email Verification ───────────────────────────────────────────────────────
+
+function emailVerificationHtml(firstName: string, verifyUrl: string): string {
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+
+        <!-- Header -->
+        <tr>
+          <td style="background:#1a5c38;border-radius:12px 12px 0 0;padding:32px 40px;text-align:center;">
+            <p style="margin:0;color:#ffffff;font-size:22px;font-weight:bold;letter-spacing:1px;">WMCC</p>
+            <p style="margin:4px 0 0;color:#86efac;font-size:13px;">Milton Keynes Cricket Club</p>
+          </td>
+        </tr>
+
+        <!-- Body -->
+        <tr>
+          <td style="background:#ffffff;padding:40px;border-radius:0 0 12px 12px;">
+            <p style="margin:0 0 8px;font-size:20px;font-weight:bold;color:#111827;">Verify your email address</p>
+            <p style="margin:0 0 24px;font-size:15px;color:#6b7280;">Hi ${firstName}, please confirm your email address to complete your WMCC account setup.</p>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+              <tr>
+                <td align="center">
+                  <a href="${verifyUrl}" style="display:inline-block;background:#1a5c38;color:#ffffff;font-size:15px;font-weight:bold;padding:14px 32px;border-radius:8px;text-decoration:none;">
+                    Verify Email Address
+                  </a>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0 0 8px;font-size:13px;color:#6b7280;">Or copy and paste this link into your browser:</p>
+            <p style="margin:0 0 24px;font-size:12px;color:#1a5c38;word-break:break-all;">${verifyUrl}</p>
+
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;margin-bottom:28px;">
+              <tr>
+                <td style="padding:14px 18px;">
+                  <p style="margin:0;font-size:13px;color:#92400e;">
+                    This link expires in <strong>24 hours</strong>. If you did not create a WMCC account, you can safely ignore this email.
+                  </p>
+                </td>
+              </tr>
+            </table>
+
+            <p style="margin:0;font-size:13px;color:#9ca3af;text-align:center;">
+              This is an automated email from WMCC Milton Keynes Cricket Club.<br>
+              Please do not reply to this email.
+            </p>
+          </td>
+        </tr>
+
+        <!-- Footer -->
+        <tr>
+          <td style="padding:20px;text-align:center;">
+            <p style="margin:0;font-size:12px;color:#9ca3af;">
+              WMCC · Crownhill Cricket Ground · 6 Marley Grove · Milton Keynes · MK8 0AT
+            </p>
+          </td>
+        </tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}
+
+export async function sendEmailVerification(
+  to: string,
+  firstName: string,
+  verifyUrl: string
+): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to,
+      subject: 'Verify your WMCC email address',
+      html: emailVerificationHtml(firstName, verifyUrl),
+    })
+    if (error) { console.error('Email verification send failed:', error); return false }
+    return true
+  } catch (err) {
+    console.error('Email verification send failed:', err)
+    return false
+  }
+}
