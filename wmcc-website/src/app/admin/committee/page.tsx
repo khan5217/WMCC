@@ -128,9 +128,9 @@ export default function AdminCommitteePage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {members.map((m) => (
             <div key={m.id} className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 text-center">
-              <div className="w-16 h-16 rounded-full mx-auto mb-3 overflow-hidden bg-green-100 flex items-center justify-center">
+              <div className="w-20 h-20 rounded-full mx-auto mb-3 overflow-hidden bg-green-100 flex items-center justify-center">
                 {m.user.avatarUrl ? (
-                  <Image src={m.user.avatarUrl} alt={m.user.firstName} width={64} height={64} className="object-cover w-16 h-16" />
+                  <Image src={m.user.avatarUrl} alt={m.user.firstName} width={80} height={80} className="object-cover w-20 h-20" />
                 ) : (
                   <span className="text-xl font-bold text-cricket-green">
                     {initials(m.user.firstName, m.user.lastName)}
