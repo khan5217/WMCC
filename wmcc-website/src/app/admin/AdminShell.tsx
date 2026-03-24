@@ -71,7 +71,7 @@ export default function AdminShell({ children, userName }: Props) {
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* ── Desktop sidebar ── */}
-      <aside className="hidden lg:flex w-64 bg-gray-900 min-h-screen fixed top-0 left-0 z-40 pt-[90px] flex-col overflow-y-auto">
+      <aside className="hidden lg:flex w-64 bg-gray-900 h-screen fixed top-0 left-0 z-40 flex-col overflow-y-auto">
         <div className="border-b border-cricket-gold/20 px-5 py-4">
           <div className="text-cricket-gold font-bold text-base tracking-wide">WMCC Admin</div>
           <div className="text-gray-500 text-xs mt-0.5">{userName}</div>
@@ -124,7 +124,7 @@ export default function AdminShell({ children, userName }: Props) {
       )}
 
       {/* ── Main content ── */}
-      <main className="flex-1 min-h-screen lg:ml-64 pt-14 lg:pt-[90px]">
+      <main className="flex-1 min-h-screen lg:ml-64 pt-14 lg:pt-0">
         {children}
       </main>
     </div>
