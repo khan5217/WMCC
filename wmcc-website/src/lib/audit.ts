@@ -16,7 +16,7 @@ export async function logAudit(params: {
         action: params.action,
         entity: params.entity,
         entityId: params.entityId ?? null,
-        details: params.details ?? Prisma.DbNull,
+        details: (params.details as Prisma.InputJsonValue | undefined) ?? Prisma.DbNull,
         ipAddress: params.ipAddress ?? null,
       },
     })
