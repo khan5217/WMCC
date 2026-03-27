@@ -253,6 +253,7 @@ model Player {
   captainOf        Team[]             @relation("TeamCaptain")
   performances     Performance[]
   matchFeeAssignments MatchFeeAssignment[]
+  availabilityRequests AvailabilityRequest[]
 
   @@index([userId])
 }
@@ -308,6 +309,7 @@ model Match {
   performances       Performance[]
   galleryItems       GalleryItem[]
   matchFeeAssignments MatchFeeAssignment[]
+  availabilityRequests AvailabilityRequest[]
 
   @@index([teamId])
   @@index([date])
@@ -555,4 +557,36 @@ model AuditLog {
   @@index([actorId])
   @@index([entity, entityId])
   @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────
+// PLAYER AVAILABILITY
+// ─────────────────────────────────────────────
+
+enum AvailabilityStatus {
+  PENDING
+  AVAILABLE
+  UNAVAILABLE
+  MAYBE
+}
+
+model AvailabilityRequest {
+  id                String             @id @default(cuid())
+  matchId           String
+  playerId          String
+  token             String             @unique
+  status            AvailabilityStatus @default(PENDING)
+  note              String?
+  emailSentAt       DateTime?
+  smsSentAt         DateTime?
+  smsReminderSentAt DateTime?
+  respondedAt       DateTime?
+  createdAt         DateTime           @default(now())
+
+  match  Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, playerId])
+  @@index([matchId])
+  @@index([token])
 }

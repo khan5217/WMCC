@@ -1003,6 +1003,94 @@ function emailVerificationHtml(firstName: string, verifyUrl: string): string {
 </html>`
 }
 
+export async function sendAvailabilityRequest(params: {
+  to: string
+  firstName: string
+  matchDate: string
+  opposition: string
+  venue: string
+  token: string
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false
+  const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://wmccmk.com'
+  const availableUrl  = `${base}/availability/respond?token=${params.token}&status=AVAILABLE`
+  const unavailableUrl = `${base}/availability/respond?token=${params.token}&status=UNAVAILABLE`
+  const maybeUrl      = `${base}/availability/respond?token=${params.token}&status=MAYBE`
+
+  const html = `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+        <tr>
+          <td style="background:#1a5c38;border-radius:12px 12px 0 0;padding:32px 40px;text-align:center;">
+            <p style="margin:0;color:#ffffff;font-size:22px;font-weight:bold;letter-spacing:1px;">WMCC</p>
+            <p style="margin:4px 0 0;color:#86efac;font-size:13px;">Milton Keynes Cricket Club</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background:#ffffff;padding:40px;border-radius:0 0 12px 12px;">
+            <p style="margin:0 0 8px;font-size:20px;font-weight:bold;color:#111827;">Are you available?</p>
+            <p style="margin:0 0 24px;font-size:15px;color:#6b7280;">Hi ${params.firstName}, please let us know if you can play in the upcoming match.</p>
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border-radius:8px;margin-bottom:28px;">
+              <tr><td style="padding:16px 20px;border-bottom:1px solid #e5e7eb;">
+                <p style="margin:0;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">Opposition</p>
+                <p style="margin:4px 0 0;font-size:15px;color:#111827;font-weight:600;">WMCC vs ${params.opposition}</p>
+              </td></tr>
+              <tr><td style="padding:16px 20px;border-bottom:1px solid #e5e7eb;">
+                <p style="margin:0;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">Date</p>
+                <p style="margin:4px 0 0;font-size:15px;color:#111827;font-weight:600;">${params.matchDate}</p>
+              </td></tr>
+              <tr><td style="padding:16px 20px;">
+                <p style="margin:0;font-size:12px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px;">Venue</p>
+                <p style="margin:4px 0 0;font-size:15px;color:#111827;font-weight:600;">${params.venue}</p>
+              </td></tr>
+            </table>
+            <p style="margin:0 0 16px;font-size:14px;font-weight:600;color:#374151;">Tap one button — no login required:</p>
+            <table cellpadding="0" cellspacing="0" width="100%">
+              <tr>
+                <td style="padding:0 6px 0 0;width:33%;">
+                  <a href="${availableUrl}" style="display:block;text-align:center;background:#16a34a;color:#ffffff;font-weight:700;font-size:14px;padding:14px 8px;border-radius:8px;text-decoration:none;">✅ Available</a>
+                </td>
+                <td style="padding:0 6px;width:33%;">
+                  <a href="${maybeUrl}" style="display:block;text-align:center;background:#d97706;color:#ffffff;font-weight:700;font-size:14px;padding:14px 8px;border-radius:8px;text-decoration:none;">❓ Maybe</a>
+                </td>
+                <td style="padding:0 0 0 6px;width:33%;">
+                  <a href="${unavailableUrl}" style="display:block;text-align:center;background:#dc2626;color:#ffffff;font-weight:700;font-size:14px;padding:14px 8px;border-radius:8px;text-decoration:none;">❌ Not Available</a>
+                </td>
+              </tr>
+            </table>
+            <p style="margin:24px 0 0;font-size:12px;color:#9ca3af;text-align:center;">You can change your response any time before the match. This link expires at match time.</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:20px;text-align:center;">
+            <p style="margin:0;font-size:12px;color:#9ca3af;">WMCC · Crownhill Cricket Ground · 6 Marley Grove · Milton Keynes · MK8 0AT</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM,
+      to: params.to,
+      subject: `Availability check: WMCC vs ${params.opposition} — ${params.matchDate}`,
+      html,
+    })
+    if (error) { console.error('Availability email failed:', error); return false }
+    return true
+  } catch (err) {
+    console.error('Availability email failed:', err)
+    return false
+  }
+}
+
 export async function sendEmailVerification(
   to: string,
   firstName: string,
