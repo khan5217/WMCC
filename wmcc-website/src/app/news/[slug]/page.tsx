@@ -1,6 +1,5 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 import { formatDatetime } from '@/lib/utils'
 import { ArrowLeft } from 'lucide-react'
@@ -69,7 +68,8 @@ export default async function ArticlePage({ params }: Props) {
       {article.coverImage && (
         <div className="relative h-72 md:h-96 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4">
           <div className="relative h-full rounded-xl overflow-hidden shadow-xl">
-            <Image src={article.coverImage} alt={article.title} fill className="object-cover" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={article.coverImage} alt={article.title} className="w-full h-full object-cover" loading="lazy" decoding="async" />
           </div>
         </div>
       )}
