@@ -55,6 +55,32 @@ export async function sendOTP(userId: string, phone: string): Promise<{ success:
   }
 }
 
+export async function sendAvailabilitySMS(params: {
+  phone: string
+  firstName: string
+  matchDate: string
+  opposition: string
+  token: string
+  isReminder?: boolean
+}): Promise<{ success: boolean; error?: string }> {
+  const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://wmccmk.com'
+  const availableUrl   = `${base}/availability/respond?token=${params.token}&status=AVAILABLE`
+  const unavailableUrl = `${base}/availability/respond?token=${params.token}&status=UNAVAILABLE`
+  const prefix = params.isReminder ? 'REMINDER: ' : ''
+
+  try {
+    await client.messages.create({
+      body: `${prefix}WMCC Availability: ${params.opposition} on ${params.matchDate}.\nAvailable? ${availableUrl}\nNot available? ${unavailableUrl}`,
+      from: TWILIO_FROM,
+      to: params.phone,
+    })
+    return { success: true }
+  } catch (error: any) {
+    console.error('Twilio availability SMS error:', error.message)
+    return { success: false, error: error.message }
+  }
+}
+
 export async function verifyOTP(userId: string, code: string): Promise<boolean> {
   const codeHash = hashOTP(code)
 
