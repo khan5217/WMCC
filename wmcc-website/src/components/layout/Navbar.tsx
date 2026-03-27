@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Menu, X, ChevronDown, LogIn, UserCircle, LogOut, Shield } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -94,20 +95,14 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
-            <img
+            <Image
               src="https://zkbeifjlj6gi0c4b.public.blob.vercel-storage.com/WMCC_Logo.jpg"
               alt="WMCC"
-              className="h-12 w-12 object-contain rounded-full"
-              onError={(e) => {
-                const t = e.currentTarget
-                t.style.display = 'none'
-                const fallback = t.nextElementSibling as HTMLElement
-                if (fallback) fallback.style.display = 'flex'
-              }}
+              width={48}
+              height={48}
+              className="object-contain rounded-full"
+              priority
             />
-            <div className="hidden w-10 h-10 bg-cricket-green rounded-full items-center justify-center text-white font-bold text-lg group-hover:bg-cricket-dark transition-colors">
-              W
-            </div>
             <div className="hidden sm:block">
               <div className="font-bold text-gray-900 leading-tight">WMCC</div>
               <div className="text-xs text-cricket-gold leading-tight font-medium">Milton Keynes</div>

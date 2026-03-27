@@ -67,6 +67,8 @@ export function SponsorsSection({ sponsors }: { sponsors: Sponsor[] }) {
                         src={sponsor.logoUrl}
                         alt={sponsor.name}
                         className="h-16 w-36 object-contain"
+                        loading="lazy"
+                        decoding="async"
                       />
                     ) : (
                       <span className={`font-bold text-2xl text-center transition-colors ${isGold ? 'text-white group-hover:text-cricket-gold' : 'text-gray-200 group-hover:text-gray-100'}`}>
@@ -108,6 +110,8 @@ export function SponsorsSection({ sponsors }: { sponsors: Sponsor[] }) {
                       src={sponsor.logoUrl}
                       alt={sponsor.name}
                       className="h-10 w-32 object-contain opacity-70 hover:opacity-100 transition-opacity"
+                      loading="lazy"
+                      decoding="async"
                     />
                   ) : (
                     <span className="text-gray-300 font-medium text-sm">{sponsor.name}</span>
