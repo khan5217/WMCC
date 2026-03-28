@@ -494,16 +494,22 @@ enum FeeAssignmentStatus {
   WAIVED
 }
 
+enum FeeBillingPeriod {
+  PER_MATCH
+  PER_DAY
+}
+
 model MatchFeeProduct {
-  id            String   @id @default(cuid())
+  id            String           @id @default(cuid())
   name          String
   description   String?
-  starterAmount Int      @default(0)  // pence
-  subAmount     Int      @default(0)  // pence
+  starterAmount Int              @default(0)  // pence
+  subAmount     Int              @default(0)  // pence
   season        Int
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  billingPeriod FeeBillingPeriod @default(PER_MATCH)
+  isActive      Boolean          @default(true)
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 
   assignments MatchFeeAssignment[]
 
