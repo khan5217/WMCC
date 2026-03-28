@@ -17,6 +17,7 @@ async function requireAdmin(req: NextRequest) {
 }
 
 const schema = z.object({
+  billingPeriod: z.enum(['PER_MATCH', 'PER_DAY']).optional(),
   name: z.string().min(1).optional(),
   description: z.string().nullable().optional(),
   starterAmount: z.number().int().min(0).optional(),

@@ -22,6 +22,7 @@ const schema = z.object({
   starterAmount: z.number().int().min(0),
   subAmount: z.number().int().min(0),
   season: z.number().int(),
+  billingPeriod: z.enum(['PER_MATCH', 'PER_DAY']).optional(),
   isActive: z.boolean().optional(),
 })
 

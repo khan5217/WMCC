@@ -15,6 +15,7 @@ interface Product {
   starterAmount: number
   subAmount: number
   season: number
+  billingPeriod: 'PER_MATCH' | 'PER_DAY'
   isActive: boolean
 }
 
@@ -28,6 +29,7 @@ const emptyForm = {
   starterAmount: '',
   subAmount: '',
   season: String(CURRENT_YEAR),
+  billingPeriod: 'PER_MATCH' as 'PER_MATCH' | 'PER_DAY',
   isActive: true,
 }
 
@@ -67,6 +69,7 @@ export default function FeeProductsPage() {
       starterAmount: String(p.starterAmount / 100),
       subAmount: String(p.subAmount / 100),
       season: String(p.season),
+      billingPeriod: p.billingPeriod ?? 'PER_MATCH',
       isActive: p.isActive,
     })
     setShowForm(true)
@@ -82,6 +85,7 @@ export default function FeeProductsPage() {
         starterAmount: Math.round(parseFloat(form.starterAmount || '0') * 100),
         subAmount: Math.round(parseFloat(form.subAmount || '0') * 100),
         season: parseInt(form.season),
+        billingPeriod: form.billingPeriod,
         isActive: form.isActive,
       }
       if (editing) {
@@ -151,9 +155,12 @@ export default function FeeProductsPage() {
                   {p.description && (
                     <div className="text-xs text-gray-400 mt-0.5 truncate">{p.description}</div>
                   )}
-                  <div className="flex gap-4 mt-1 text-xs text-gray-600">
+                  <div className="flex gap-4 mt-1 text-xs text-gray-600 flex-wrap">
                     <span>Starter: <strong>{fmt(p.starterAmount)}</strong></span>
                     <span>Sub: <strong>{fmt(p.subAmount)}</strong></span>
+                    <span className={`px-2 py-0.5 rounded-full font-semibold ${p.billingPeriod === 'PER_DAY' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+                      {p.billingPeriod === 'PER_DAY' ? 'Per Day' : 'Per Match'}
+                    </span>
                   </div>
                 </div>
                 <div className="flex gap-2 shrink-0">
@@ -231,6 +238,31 @@ export default function FeeProductsPage() {
                     <option key={y} value={y}>{y}</option>
                   ))}
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1.5">Billing Period</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(['PER_MATCH', 'PER_DAY'] as const).map((val) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setForm((f) => ({ ...f, billingPeriod: val }))}
+                      className={`py-2.5 px-3 rounded-lg border text-sm font-medium transition-colors ${
+                        form.billingPeriod === val
+                          ? 'bg-cricket-green text-white border-cricket-green'
+                          : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      {val === 'PER_MATCH' ? 'Per Match' : 'Per Day'}
+                    </button>
+                  ))}
+                </div>
+                {form.billingPeriod === 'PER_DAY' && (
+                  <p className="text-xs text-blue-600 mt-1.5">
+                    Players will only be charged once, even if they play multiple matches on the same day.
+                  </p>
+                )}
               </div>
 
               <div>
