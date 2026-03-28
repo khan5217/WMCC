@@ -5,10 +5,18 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import { ArrowLeft, Send, Bell, CheckCircle, XCircle, HelpCircle, Clock } from 'lucide-react'
+import { ArrowLeft, Send, Bell, CheckCircle, XCircle, HelpCircle, Clock, PoundSterling, ExternalLink } from 'lucide-react'
+
+type FeeAssignment = {
+  id: string
+  status: 'PENDING' | 'OUTSTANDING' | 'PAID' | 'WAIVED'
+  amount: number
+  playerType: 'STARTER' | 'SUB'
+}
 
 type Player = {
   user: { firstName: string; lastName: string }
+  matchFeeAssignments: FeeAssignment[]
 }
 
 type AvailabilityRequest = {
@@ -34,6 +42,17 @@ const STATUS_CONFIG = {
   UNAVAILABLE: { label: 'Not Available', icon: XCircle,     colour: 'text-red-600',    bg: 'bg-red-50',    border: 'border-red-200' },
   MAYBE:       { label: 'Maybe',         icon: HelpCircle,  colour: 'text-amber-600',  bg: 'bg-amber-50',  border: 'border-amber-200' },
   PENDING:     { label: 'No Response',   icon: Clock,       colour: 'text-gray-500',   bg: 'bg-gray-50',   border: 'border-gray-200' },
+}
+
+const FEE_STATUS_BADGE: Record<string, string> = {
+  PENDING:     'bg-yellow-100 text-yellow-700',
+  OUTSTANDING: 'bg-orange-100 text-orange-700',
+  PAID:        'bg-green-100 text-green-700',
+  WAIVED:      'bg-gray-100 text-gray-500',
+}
+
+function fmt(pence: number) {
+  return `£${(pence / 100).toFixed(2)}`
 }
 
 export default function AvailabilityPage() {
@@ -94,10 +113,19 @@ export default function AvailabilityPage() {
   return (
     <div className="p-4 sm:p-6 max-w-3xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <Link href={`/admin/matches`} className="text-gray-500 hover:text-gray-700">
+        <Link href="/admin/matches" className="text-gray-500 hover:text-gray-700">
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">Player Availability</h1>
+        <div className="flex-1">
+          <h1 className="text-2xl font-bold text-gray-900">Player Availability</h1>
+          <p className="text-xs text-gray-400 mt-0.5">Players marked Available are auto-assigned a match fee.</p>
+        </div>
+        <Link
+          href={`/admin/match-fees/${id}`}
+          className="inline-flex items-center gap-1.5 text-sm text-blue-600 font-medium hover:underline"
+        >
+          <PoundSterling className="h-4 w-4" /> Manage Fees
+        </Link>
       </div>
 
       {/* Summary cards */}
@@ -119,7 +147,7 @@ export default function AvailabilityPage() {
       )}
 
       {/* Action buttons */}
-      <div className="flex gap-3 mb-6">
+      <div className="flex flex-wrap gap-3 mb-6">
         <button
           onClick={sendRequests}
           disabled={sending}
@@ -149,7 +177,7 @@ export default function AvailabilityPage() {
           <p className="text-sm mt-1">Click "Send Availability Request" to notify all players.</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-5">
           {(Object.entries(grouped) as [keyof typeof grouped, AvailabilityRequest[]][])
             .filter(([, items]) => items.length > 0)
             .map(([status, items]) => {
@@ -157,28 +185,58 @@ export default function AvailabilityPage() {
               const Icon = cfg.icon
               return (
                 <div key={status}>
-                  <div className={`flex items-center gap-2 mb-2`}>
+                  <div className="flex items-center gap-2 mb-2">
                     <Icon className={`h-4 w-4 ${cfg.colour}`} />
                     <span className={`text-sm font-semibold ${cfg.colour}`}>{cfg.label} ({items.length})</span>
                   </div>
                   <div className="space-y-2">
-                    {items.map((r) => (
-                      <div key={r.id} className={`flex items-center justify-between rounded-lg border px-4 py-3 ${cfg.bg} ${cfg.border}`}>
-                        <span className="font-medium text-gray-900 text-sm">
-                          {r.player.user.firstName} {r.player.user.lastName}
-                        </span>
-                        <div className="flex items-center gap-3 text-xs text-gray-400">
-                          {r.emailSentAt && <span>Email ✓</span>}
-                          {r.smsSentAt && <span>SMS ✓</span>}
-                          {r.smsReminderSentAt && <span>Reminder ✓</span>}
-                          {r.respondedAt && (
-                            <span className="text-gray-500">
-                              {new Date(r.respondedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                    {items.map((r) => {
+                      const fee = r.player.matchFeeAssignments[0] ?? null
+                      return (
+                        <div key={r.id} className={`rounded-lg border px-4 py-3 ${cfg.bg} ${cfg.border}`}>
+                          <div className="flex items-center justify-between gap-3 flex-wrap">
+                            <span className="font-medium text-gray-900 text-sm">
+                              {r.player.user.firstName} {r.player.user.lastName}
                             </span>
-                          )}
+
+                            <div className="flex items-center gap-3 flex-wrap">
+                              {/* Fee badge */}
+                              {fee ? (
+                                <Link
+                                  href={`/admin/match-fees/${id}`}
+                                  className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${FEE_STATUS_BADGE[fee.status]}`}
+                                >
+                                  <PoundSterling className="h-3 w-3" />
+                                  {fmt(fee.amount)} · {fee.status}
+                                  <ExternalLink className="h-3 w-3 ml-0.5" />
+                                </Link>
+                              ) : status === 'AVAILABLE' ? (
+                                <Link
+                                  href={`/admin/match-fees/${id}`}
+                                  className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500"
+                                >
+                                  <PoundSterling className="h-3 w-3" /> No fee — assign manually
+                                </Link>
+                              ) : null}
+
+                              {/* Sent indicators */}
+                              <div className="flex items-center gap-2 text-xs text-gray-400">
+                                {r.emailSentAt && <span>Email ✓</span>}
+                                {r.smsSentAt && <span>SMS ✓</span>}
+                                {r.smsReminderSentAt && <span>Reminder ✓</span>}
+                                {r.respondedAt && (
+                                  <span className="text-gray-500">
+                                    {new Date(r.respondedAt).toLocaleDateString('en-GB', {
+                                      day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+                                    })}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 </div>
               )

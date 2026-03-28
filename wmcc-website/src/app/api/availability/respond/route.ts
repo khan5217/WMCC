@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { randomBytes } from 'crypto'
 
 // GET /api/availability/respond?token=xxx&status=AVAILABLE
 // Public — no auth. Called when player clicks a button in their email/SMS.
@@ -21,7 +22,7 @@ export async function GET(req: NextRequest) {
     where: { token },
     include: {
       match: true,
-      player: { include: { user: { select: { firstName: true } } } },
+      player: true,
     },
   })
 
@@ -34,6 +35,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'This match has already passed' }, { status: 410 })
   }
 
+  const previousStatus = request.status
+
   await prisma.availabilityRequest.update({
     where: { token },
     data: {
@@ -41,6 +44,46 @@ export async function GET(req: NextRequest) {
       respondedAt: new Date(),
     },
   })
+
+  // Auto-assign match fee when player marks themselves Available
+  if (status === 'AVAILABLE') {
+    const existing = await prisma.matchFeeAssignment.findUnique({
+      where: { matchId_playerId: { matchId: request.matchId, playerId: request.playerId } },
+    })
+
+    if (!existing) {
+      // Find the active fee product for this season
+      const season = request.match.date.getFullYear()
+      const feeProduct = await prisma.matchFeeProduct.findFirst({
+        where: { season, isActive: true },
+        orderBy: { createdAt: 'desc' },
+      })
+
+      await prisma.matchFeeAssignment.create({
+        data: {
+          matchId: request.matchId,
+          playerId: request.playerId,
+          feeProductId: feeProduct?.id ?? null,
+          playerType: 'STARTER',
+          amount: feeProduct?.starterAmount ?? 0,
+          paymentToken: randomBytes(20).toString('hex'),
+        },
+      })
+    }
+  }
+
+  // If player changed FROM available to unavailable/maybe — remove their fee assignment
+  // only if it hasn't been paid yet
+  if (status !== 'AVAILABLE' && previousStatus === 'AVAILABLE') {
+    const assignment = await prisma.matchFeeAssignment.findUnique({
+      where: { matchId_playerId: { matchId: request.matchId, playerId: request.playerId } },
+    })
+    if (assignment && assignment.status === 'PENDING') {
+      await prisma.matchFeeAssignment.delete({
+        where: { id: assignment.id },
+      })
+    }
+  }
 
   // Redirect to the confirmation page
   const base = process.env.NEXT_PUBLIC_SITE_URL || 'https://wmccmk.com'

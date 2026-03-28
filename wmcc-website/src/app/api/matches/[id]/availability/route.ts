@@ -16,6 +16,10 @@ export async function GET(req: NextRequest, { params }: Ctx) {
         player: {
           include: {
             user: { select: { firstName: true, lastName: true, avatarUrl: true } },
+            matchFeeAssignments: {
+              where: { matchId: params.id },
+              select: { id: true, status: true, amount: true, playerType: true },
+            },
           },
         },
       },
