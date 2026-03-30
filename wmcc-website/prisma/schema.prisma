@@ -170,6 +170,29 @@ enum TeamType {
   SECOND_XI
 }
 
+// ─────────────────────────────────────────────
+// MATCH EVENTS (groups one or more matches into a day/festival)
+// ─────────────────────────────────────────────
+
+model MatchEvent {
+  id        String   @id @default(cuid())
+  name      String   // "vs Team A" for single matches, "Festival Day" for multi-match days
+  date      DateTime
+  venue     String
+  teamId    String
+  season    Int
+  createdAt DateTime @default(now())
+
+  team                 Team                  @relation(fields: [teamId], references: [id])
+  matches              Match[]
+  availabilityRequests AvailabilityRequest[]
+  matchFeeAssignments  MatchFeeAssignment[]
+
+  @@index([teamId])
+  @@index([date])
+  @@index([season])
+}
+
 model CommitteeMember {
   id           String   @id @default(cuid())
   userId       String   @unique
@@ -189,9 +212,10 @@ model Team {
   season      Int
   createdAt   DateTime @default(now())
 
-  captain  Player?   @relation("TeamCaptain", fields: [captainId], references: [id])
-  players  Player[]  @relation("TeamPlayers")
-  matches  Match[]
+  captain      Player?      @relation("TeamCaptain", fields: [captainId], references: [id])
+  players      Player[]     @relation("TeamPlayers")
+  matches      Match[]
+  matchEvents  MatchEvent[]
 
   @@unique([type, season])
 }
@@ -248,11 +272,11 @@ model Player {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
-  user             User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  teams            Team[]             @relation("TeamPlayers")
-  captainOf        Team[]             @relation("TeamCaptain")
-  performances     Performance[]
-  matchFeeAssignments MatchFeeAssignment[]
+  user                 User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teams                Team[]               @relation("TeamPlayers")
+  captainOf            Team[]               @relation("TeamCaptain")
+  performances         Performance[]
+  matchFeeAssignments  MatchFeeAssignment[]
   availabilityRequests AvailabilityRequest[]
 
   @@index([userId])
@@ -281,6 +305,7 @@ enum MatchFormat {
 model Match {
   id              String      @id @default(cuid())
   teamId          String
+  eventId         String
   opposition      String
   venue           String
   isHome          Boolean     @default(true)
@@ -305,13 +330,13 @@ model Match {
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
 
-  team               Team                 @relation(fields: [teamId], references: [id])
-  performances       Performance[]
-  galleryItems       GalleryItem[]
-  matchFeeAssignments MatchFeeAssignment[]
-  availabilityRequests AvailabilityRequest[]
+  team         Team          @relation(fields: [teamId], references: [id])
+  event        MatchEvent    @relation(fields: [eventId], references: [id])
+  performances Performance[]
+  galleryItems GalleryItem[]
 
   @@index([teamId])
+  @@index([eventId])
   @@index([date])
 }
 
@@ -518,7 +543,7 @@ model MatchFeeProduct {
 
 model MatchFeeAssignment {
   id                 String              @id @default(cuid())
-  matchId            String
+  eventId            String
   playerId           String
   feeProductId       String?
   playerType         FeePlayerType       @default(STARTER)
@@ -534,12 +559,12 @@ model MatchFeeAssignment {
   createdAt          DateTime            @default(now())
   updatedAt          DateTime            @updatedAt
 
-  match      Match            @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  event      MatchEvent       @relation(fields: [eventId], references: [id], onDelete: Cascade)
   player     Player           @relation(fields: [playerId], references: [id], onDelete: Cascade)
   feeProduct MatchFeeProduct? @relation(fields: [feeProductId], references: [id])
 
-  @@unique([matchId, playerId])
-  @@index([matchId])
+  @@unique([eventId, playerId])
+  @@index([eventId])
   @@index([playerId])
   @@index([paymentToken])
 }
@@ -578,7 +603,7 @@ enum AvailabilityStatus {
 
 model AvailabilityRequest {
   id                String             @id @default(cuid())
-  matchId           String
+  eventId           String
   playerId          String
   token             String             @unique
   status            AvailabilityStatus @default(PENDING)
@@ -589,10 +614,10 @@ model AvailabilityRequest {
   respondedAt       DateTime?
   createdAt         DateTime           @default(now())
 
-  match  Match  @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  player Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  event  MatchEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  player Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
-  @@unique([matchId, playerId])
-  @@index([matchId])
+  @@unique([eventId, playerId])
+  @@index([eventId])
   @@index([token])
 }

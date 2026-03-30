@@ -12,7 +12,7 @@ type FeeAssignment = {
   status: 'PENDING' | 'OUTSTANDING' | 'PAID' | 'WAIVED'
   amount: number
   playerType: 'STARTER' | 'SUB'
-  matchId: string
+  eventId: string
 }
 
 type Player = {
@@ -28,9 +28,6 @@ type AvailabilityRequest = {
   smsSentAt: string | null
   smsReminderSentAt: string | null
   player: Player
-  dayFee: FeeAssignment | null
-  dayFeeOnDifferentMatch: boolean
-  dayFeeMatchId: string | null
 }
 
 type Summary = {
@@ -122,7 +119,7 @@ export default function AvailabilityPage() {
         </Link>
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-gray-900">Player Availability</h1>
-          <p className="text-xs text-gray-400 mt-0.5">Players marked Available are auto-assigned a match fee.</p>
+          <p className="text-xs text-gray-400 mt-0.5">Players marked Available are auto-assigned a match fee for the day.</p>
         </div>
         <Link
           href={`/admin/match-fees/${id}`}
@@ -195,8 +192,7 @@ export default function AvailabilityPage() {
                   </div>
                   <div className="space-y-2">
                     {items.map((r) => {
-                      const fee = r.dayFee
-                      const feeMatchId = r.dayFeeOnDifferentMatch ? r.dayFeeMatchId : id
+                      const fee = r.player.matchFeeAssignments[0] ?? null
                       return (
                         <div key={r.id} className={`rounded-lg border px-4 py-3 ${cfg.bg} ${cfg.border}`}>
                           <div className="flex items-center justify-between gap-3 flex-wrap">
@@ -205,17 +201,14 @@ export default function AvailabilityPage() {
                             </span>
 
                             <div className="flex items-center gap-3 flex-wrap">
-                              {/* Day fee badge */}
+                              {/* Fee badge */}
                               {fee ? (
                                 <Link
-                                  href={`/admin/match-fees/${feeMatchId}`}
+                                  href={`/admin/match-fees/${id}`}
                                   className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${FEE_STATUS_BADGE[fee.status]}`}
                                 >
                                   <PoundSterling className="h-3 w-3" />
                                   {fmt(fee.amount)} · {fee.status}
-                                  {r.dayFeeOnDifferentMatch && (
-                                    <span className="ml-1 text-xs opacity-70">(other match)</span>
-                                  )}
                                   <ExternalLink className="h-3 w-3 ml-0.5" />
                                 </Link>
                               ) : status === 'AVAILABLE' ? (

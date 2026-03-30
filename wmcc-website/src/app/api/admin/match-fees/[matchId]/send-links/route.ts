@@ -24,19 +24,20 @@ export async function POST(req: NextRequest, { params }: { params: { matchId: st
   const adminUser = await requireAdmin(req)
   if (!adminUser) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
+  // Resolve match → event
   const match = await prisma.match.findUnique({
     where: { id: params.matchId },
-    select: { opposition: true, date: true, venue: true },
+    include: { event: { select: { name: true, date: true } } },
   })
   if (!match) return NextResponse.json({ error: 'Match not found' }, { status: 404 })
 
-  const matchDesc = `vs ${match.opposition} — ${new Date(match.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
+  const eventDesc = `${match.event.name} — ${new Date(match.event.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://wmccmk.co.uk'
 
-  // Get all pending/outstanding assignments that have an email address
+  // Get all pending/outstanding assignments for the event
   const assignments = await prisma.matchFeeAssignment.findMany({
     where: {
-      matchId: params.matchId,
+      eventId: match.eventId,
       status: { in: ['PENDING', 'OUTSTANDING'] },
     },
     include: {
@@ -53,7 +54,6 @@ export async function POST(req: NextRequest, { params }: { params: { matchId: st
   let skipped = 0
 
   for (const a of assignments) {
-    // Resolve contact details: member account takes precedence, fallback to player contact fields
     const isGuestEmail = a.player.user.email?.includes('@wmcc.internal')
     const email = isGuestEmail ? a.player.contactEmail : a.player.user.email
     const firstName = a.player.user.firstName
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest, { params }: { params: { matchId: st
     if (!email || !a.paymentToken) { skipped++; continue }
 
     const payLink = `${baseUrl}/match-fees/pay/${a.paymentToken}`
-    const ok = await sendMatchFeePaymentLink(email, firstName, matchDesc, fmt(a.amount), payLink)
+    const ok = await sendMatchFeePaymentLink(email, firstName, eventDesc, fmt(a.amount), payLink)
 
     if (ok) {
       await prisma.matchFeeAssignment.update({

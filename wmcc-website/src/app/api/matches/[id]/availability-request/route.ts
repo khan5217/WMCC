@@ -8,7 +8,7 @@ import { format } from 'date-fns'
 
 interface Ctx { params: { id: string } }
 
-// POST — admin sends availability requests to all active players
+// POST — admin sends availability requests to all active players for this match's event
 export async function POST(req: NextRequest, { params }: Ctx) {
   return withAuth(req, async (ctx) => {
     if (ctx.role !== 'ADMIN' && ctx.role !== 'COMMITTEE') {
@@ -17,12 +17,12 @@ export async function POST(req: NextRequest, { params }: Ctx) {
 
     const match = await prisma.match.findUnique({
       where: { id: params.id },
-      include: { team: true },
+      include: { team: true, event: true },
     })
     if (!match) return NextResponse.json({ error: 'Match not found' }, { status: 404 })
 
-    if (match.date < new Date()) {
-      return NextResponse.json({ error: 'Cannot send availability for a past match' }, { status: 400 })
+    if (match.event.date < new Date()) {
+      return NextResponse.json({ error: 'Cannot send availability for a past event' }, { status: 400 })
     }
 
     // Get all active players with user contact info
@@ -31,7 +31,8 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       include: { user: { select: { email: true, phone: true, firstName: true, lastName: true } } },
     })
 
-    const matchDate = format(match.date, 'EEEE d MMMM yyyy, h:mm a')
+    const matchDate = format(match.event.date, 'EEEE d MMMM yyyy')
+    const eventDesc = match.event.name
 
     let emailsSent = 0
     let smsSent = 0
@@ -40,7 +41,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
     for (const player of players) {
       // Upsert — if already exists keep existing token so links still work
       const existing = await prisma.availabilityRequest.findUnique({
-        where: { matchId_playerId: { matchId: match.id, playerId: player.id } },
+        where: { eventId_playerId: { eventId: match.eventId, playerId: player.id } },
       })
 
       let token: string
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       } else {
         token = crypto.randomBytes(32).toString('hex')
         await prisma.availabilityRequest.create({
-          data: { matchId: match.id, playerId: player.id, token },
+          data: { eventId: match.eventId, playerId: player.id, token },
         })
         created++
       }
@@ -58,8 +59,8 @@ export async function POST(req: NextRequest, { params }: Ctx) {
         to: player.user.email,
         firstName: player.user.firstName,
         matchDate,
-        opposition: match.opposition,
-        venue: match.venue,
+        opposition: eventDesc,
+        venue: match.event.venue,
         token,
       })
       if (emailOk) {
@@ -77,7 +78,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
           phone,
           firstName: player.user.firstName,
           matchDate,
-          opposition: match.opposition,
+          opposition: eventDesc,
           token,
         })
         if (smsOk.success) {
@@ -94,21 +95,24 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   })
 }
 
-// POST remind — send SMS reminder to players who haven't responded
+// PATCH — send SMS reminder to players who haven't responded
 export async function PATCH(req: NextRequest, { params }: Ctx) {
   return withAuth(req, async (ctx) => {
     if (ctx.role !== 'ADMIN' && ctx.role !== 'COMMITTEE') {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const match = await prisma.match.findUnique({ where: { id: params.id } })
+    const match = await prisma.match.findUnique({
+      where: { id: params.id },
+      include: { event: true },
+    })
     if (!match) return NextResponse.json({ error: 'Match not found' }, { status: 404 })
-    if (match.date < new Date()) {
-      return NextResponse.json({ error: 'Match has already passed' }, { status: 400 })
+    if (match.event.date < new Date()) {
+      return NextResponse.json({ error: 'Event has already passed' }, { status: 400 })
     }
 
     const pending = await prisma.availabilityRequest.findMany({
-      where: { matchId: params.id, status: 'PENDING' },
+      where: { eventId: match.eventId, status: 'PENDING' },
       include: {
         player: {
           include: { user: { select: { firstName: true, phone: true } } },
@@ -116,24 +120,24 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
       },
     })
 
-    const matchDate = format(match.date, 'EEEE d MMMM yyyy, h:mm a')
+    const matchDate = format(match.event.date, 'EEEE d MMMM yyyy')
     let smsSent = 0
 
-    for (const req of pending) {
-      const phone = req.player.user.phone ?? req.player.contactPhone
+    for (const r of pending) {
+      const phone = r.player.user.phone ?? r.player.contactPhone
       if (!phone) continue
       const ok = await sendAvailabilitySMS({
         phone,
-        firstName: req.player.user.firstName,
+        firstName: r.player.user.firstName,
         matchDate,
-        opposition: match.opposition,
-        token: req.token,
+        opposition: match.event.name,
+        token: r.token,
         isReminder: true,
       })
       if (ok.success) {
         smsSent++
         await prisma.availabilityRequest.update({
-          where: { id: req.id },
+          where: { id: r.id },
           data: { smsReminderSentAt: new Date() },
         })
       }

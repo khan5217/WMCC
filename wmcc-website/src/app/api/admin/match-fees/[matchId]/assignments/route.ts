@@ -21,8 +21,12 @@ export async function GET(req: NextRequest, { params }: { params: { matchId: str
   const payload = getAuth(req)
   if (!payload) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+  // Resolve match → event
+  const match = await prisma.match.findUnique({ where: { id: params.matchId } })
+  if (!match) return NextResponse.json({ error: 'Match not found' }, { status: 404 })
+
   const assignments = await prisma.matchFeeAssignment.findMany({
-    where: { matchId: params.matchId },
+    where: { eventId: match.eventId },
     include: {
       player: {
         include: {
@@ -49,19 +53,19 @@ export async function POST(req: NextRequest, { params }: { params: { matchId: st
   const adminUser = await requireAdmin(req)
   if (!adminUser) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
+  // Resolve match → event
+  const match = await prisma.match.findUnique({ where: { id: params.matchId } })
+  if (!match) return NextResponse.json({ error: 'Match not found' }, { status: 404 })
+
   try {
     const body = await req.json()
     const data = createSchema.parse(body)
-
-    // Verify match exists
-    const match = await prisma.match.findUnique({ where: { id: params.matchId } })
-    if (!match) return NextResponse.json({ error: 'Match not found' }, { status: 404 })
 
     const paymentToken = randomBytes(20).toString('hex')
 
     const assignment = await prisma.matchFeeAssignment.create({
       data: {
-        matchId: params.matchId,
+        eventId: match.eventId,
         playerId: data.playerId,
         feeProductId: data.feeProductId ?? null,
         playerType: data.playerType,
@@ -81,7 +85,7 @@ export async function POST(req: NextRequest, { params }: { params: { matchId: st
     return NextResponse.json(assignment, { status: 201 })
   } catch (err: any) {
     if (err.name === 'ZodError') return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
-    if (err.code === 'P2002') return NextResponse.json({ error: 'Player already assigned to this match' }, { status: 409 })
+    if (err.code === 'P2002') return NextResponse.json({ error: 'Player already assigned to this event' }, { status: 409 })
     console.error(err)
     return NextResponse.json({ error: 'Failed to create assignment' }, { status: 500 })
   }

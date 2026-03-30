@@ -6,7 +6,7 @@ export async function GET(req: NextRequest, { params }: { params: { token: strin
   const assignment = await prisma.matchFeeAssignment.findUnique({
     where: { paymentToken: params.token },
     include: {
-      match: { select: { opposition: true, date: true, venue: true } },
+      event: { select: { name: true, date: true, venue: true } },
       player: {
         include: {
           user: { select: { firstName: true, lastName: true, email: true } },
@@ -27,7 +27,11 @@ export async function GET(req: NextRequest, { params }: { params: { token: strin
     amount: assignment.amount,
     playerType: assignment.playerType,
     status: assignment.status,
-    match: assignment.match,
+    match: {
+      opposition: assignment.event.name,
+      date: assignment.event.date,
+      venue: assignment.event.venue,
+    },
     playerName: `${assignment.player.user.firstName} ${assignment.player.user.lastName}`,
     email,
   })
@@ -37,7 +41,7 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
   const assignment = await prisma.matchFeeAssignment.findUnique({
     where: { paymentToken: params.token },
     include: {
-      match: { select: { opposition: true, date: true } },
+      event: { select: { name: true, date: true } },
       player: {
         include: {
           user: { select: { firstName: true, lastName: true, email: true } },
@@ -53,7 +57,7 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
   const isGuestEmail = assignment.player.user.email?.includes('@wmcc.internal')
   const email = isGuestEmail ? assignment.player.contactEmail : assignment.player.user.email
 
-  const matchDesc = `vs ${assignment.match.opposition} — ${new Date(assignment.match.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
+  const eventDesc = `${assignment.event.name} — ${new Date(assignment.event.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
 
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
@@ -64,7 +68,7 @@ export async function POST(req: NextRequest, { params }: { params: { token: stri
         price_data: {
           currency: 'gbp',
           product_data: {
-            name: `WMCC Match Fee — ${matchDesc}`,
+            name: `WMCC Match Fee — ${eventDesc}`,
             description: `${assignment.playerType === 'STARTER' ? 'Starter' : 'Substitute'} fee`,
           },
           unit_amount: assignment.amount,

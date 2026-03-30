@@ -7,7 +7,10 @@ export const dynamic = 'force-dynamic'
 export async function GET(_req: NextRequest, { params }: { params: { id: string } }) {
   const match = await prisma.match.findUnique({
     where: { id: params.id },
-    include: { team: true },
+    include: {
+      team: true,
+      event: { select: { id: true, name: true, date: true, venue: true } },
+    },
   })
   if (!match) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json(match)
@@ -43,6 +46,12 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
     // Unlink gallery items before deletion (matchId is nullable)
     await prisma.galleryItem.updateMany({ where: { matchId: params.id }, data: { matchId: null } })
     await prisma.match.delete({ where: { id: params.id } })
+
+    // If the event now has no remaining matches, delete it too
+    const remainingMatches = await prisma.match.count({ where: { eventId: match.eventId } })
+    if (remainingMatches === 0) {
+      await prisma.matchEvent.delete({ where: { id: match.eventId } })
+    }
 
     return NextResponse.json({ success: true })
   }, 'COMMITTEE')

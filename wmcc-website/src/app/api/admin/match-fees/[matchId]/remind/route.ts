@@ -24,18 +24,19 @@ export async function POST(req: NextRequest, { params }: { params: { matchId: st
   const adminUser = await requireAdmin(req)
   if (!adminUser) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
+  // Resolve match → event
   const match = await prisma.match.findUnique({
     where: { id: params.matchId },
-    select: { opposition: true, date: true },
+    include: { event: { select: { name: true, date: true } } },
   })
   if (!match) return NextResponse.json({ error: 'Match not found' }, { status: 404 })
 
-  const matchDesc = `vs ${match.opposition} — ${new Date(match.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
+  const eventDesc = `${match.event.name} — ${new Date(match.event.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}`
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://wmccmk.co.uk'
 
   const assignments = await prisma.matchFeeAssignment.findMany({
     where: {
-      matchId: params.matchId,
+      eventId: match.eventId,
       status: 'OUTSTANDING',
     },
     include: {
@@ -60,7 +61,7 @@ export async function POST(req: NextRequest, { params }: { params: { matchId: st
 
     const payLink = `${baseUrl}/match-fees/pay/${a.paymentToken}`
     const nextCount = a.reminderCount + 1
-    const ok = await sendMatchFeeReminder(email, firstName, matchDesc, fmt(a.amount), payLink, nextCount)
+    const ok = await sendMatchFeeReminder(email, firstName, eventDesc, fmt(a.amount), payLink, nextCount)
 
     if (ok) {
       await prisma.matchFeeAssignment.update({
