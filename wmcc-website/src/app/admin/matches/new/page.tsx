@@ -37,6 +37,7 @@ export default function NewMatchPage() {
     topBowlerWickets: '',
     cricheroesUrl: '',
     eventId: '',   // '' means auto-create a new event
+    eventName: '', // custom name for a newly-created event (festival/tournament)
   })
 
   const fetchTeams = () => {
@@ -112,6 +113,7 @@ export default function NewMatchPage() {
         topBowlerWickets: form.topBowlerWickets ? parseInt(form.topBowlerWickets) : null,
         cricheroesUrl: form.cricheroesUrl || null,
         eventId: form.eventId || null,
+        eventName: (!form.eventId && form.eventName.trim()) ? form.eventName.trim() : null,
       })
       toast.success('Match created!')
       router.push('/admin/matches')
@@ -213,27 +215,66 @@ export default function NewMatchPage() {
         </div>
 
         {/* Festival Day — shown when existing events exist on this date */}
-        {existingEvents.length > 0 && (
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-            <p className="text-sm font-semibold text-blue-800 mb-1">Festival / Double-header day detected</p>
-            <p className="text-xs text-blue-600 mb-3">
-              There {existingEvents.length === 1 ? 'is already a match' : 'are already matches'} on this date. You can group this match into the same event so availability and fees are shared.
-            </p>
-            <label className="label text-blue-700">Add to existing event</label>
-            <select
-              className="input"
-              value={form.eventId}
-              onChange={(e) => set('eventId', e.target.value)}
-            >
-              <option value="">Create a new event (separate availability &amp; fees)</option>
-              {existingEvents.map((ev) => (
-                <option key={ev.id} value={ev.id}>
-                  {ev.name} ({ev.matches.map((m) => m.opposition).join(', ')})
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
+        {existingEvents.length > 0 && (() => {
+          const selectedEvent = existingEvents.find(e => e.id === form.eventId)
+          const sameOppMatches = selectedEvent
+            ? selectedEvent.matches.filter(m => m.opposition.toLowerCase() === form.opposition.trim().toLowerCase())
+            : []
+          const matchNumber = sameOppMatches.length + 1
+          const ordinal = (n: number) => {
+            const s = ['th', 'st', 'nd', 'rd']
+            const v = n % 100
+            return n + (s[(v - 20) % 10] || s[v] || s[0])
+          }
+          return (
+            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 space-y-3">
+              <p className="text-sm font-semibold text-blue-800">Festival / Double-header day detected</p>
+              <p className="text-xs text-blue-600">
+                There {existingEvents.length === 1 ? 'is already a match' : 'are already matches'} on this date. You can group this match into the same event so availability and fees are shared.
+              </p>
+
+              <div>
+                <label className="label text-blue-700">Add to existing event</label>
+                <select
+                  className="input"
+                  value={form.eventId}
+                  onChange={(e) => { set('eventId', e.target.value); set('eventName', '') }}
+                >
+                  <option value="">Create a new event (separate availability &amp; fees)</option>
+                  {existingEvents.map((ev) => (
+                    <option key={ev.id} value={ev.id}>
+                      {ev.name} ({ev.matches.map((m) => m.opposition).join(', ')})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* New event: allow naming the tournament */}
+              {!form.eventId && (
+                <div>
+                  <label className="label text-blue-700">Event / Tournament Name <span className="font-normal text-blue-500">(optional)</span></label>
+                  <input
+                    type="text"
+                    className="input"
+                    placeholder="e.g. Club Festival Day, Annual Tournament"
+                    value={form.eventName}
+                    onChange={(e) => set('eventName', e.target.value)}
+                  />
+                  <p className="text-xs text-blue-500 mt-1">Leave blank to auto-name as &quot;vs {form.opposition || 'Opposition'}&quot;</p>
+                </div>
+              )}
+
+              {/* Existing event: show match number when same opposition already exists */}
+              {form.eventId && sameOppMatches.length > 0 && form.opposition.trim() && (
+                <div className="flex items-center gap-2 rounded bg-blue-100 border border-blue-200 px-3 py-2">
+                  <span className="text-blue-700 text-xs font-medium">
+                    This will be the <strong>{ordinal(matchNumber)} Match</strong> vs {form.opposition.trim()} in this event.
+                  </span>
+                </div>
+              )}
+            </div>
+          )
+        })()}
 
         {/* Home/Away + Result */}
         <div className="grid grid-cols-2 gap-4">

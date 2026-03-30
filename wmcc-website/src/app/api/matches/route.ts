@@ -20,6 +20,8 @@ const createSchema = z.object({
   isFeatured: z.boolean().default(false),
   // Optional: attach match to an existing MatchEvent (festival day)
   eventId: z.string().nullable().optional(),
+  // Optional: custom name for a newly-created event (tournament/festival name)
+  eventName: z.string().nullable().optional(),
 })
 
 function getAuth(req: NextRequest) {
@@ -49,7 +51,7 @@ export async function POST(req: NextRequest) {
     if (!eventId) {
       const event = await prisma.matchEvent.create({
         data: {
-          name: `vs ${data.opposition}`,
+          name: data.eventName?.trim() || `vs ${data.opposition}`,
           date: matchDate,
           venue: data.venue,
           teamId: data.teamId,
