@@ -9,6 +9,10 @@
     {
       "path": "/api/cron/birthday-wishes",
       "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/cron/match-fee-payment-links",
+      "schedule": "0 8 * * *"
     }
   ]
 }
