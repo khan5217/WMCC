@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
   const request = await prisma.availabilityRequest.findUnique({
     where: { token },
     include: {
-      match: true,
+      event: true,
       player: true,
     },
   })
@@ -30,9 +30,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid or expired link' }, { status: 404 })
   }
 
-  // Token expires at match time
-  if (request.match.date < new Date()) {
-    return NextResponse.json({ error: 'This match has already passed' }, { status: 410 })
+  // Token expires at event date
+  if (request.event.date < new Date()) {
+    return NextResponse.json({ error: 'This event has already passed' }, { status: 410 })
   }
 
   const previousStatus = request.status
@@ -48,56 +48,33 @@ export async function GET(req: NextRequest) {
   // Auto-assign match fee when player marks themselves Available
   if (status === 'AVAILABLE') {
     const existing = await prisma.matchFeeAssignment.findUnique({
-      where: { matchId_playerId: { matchId: request.matchId, playerId: request.playerId } },
+      where: { eventId_playerId: { eventId: request.eventId, playerId: request.playerId } },
     })
 
     if (!existing) {
-      const season = request.match.date.getFullYear()
+      const season = request.event.date.getFullYear()
       const feeProduct = await prisma.matchFeeProduct.findFirst({
         where: { season, isActive: true },
         orderBy: { createdAt: 'desc' },
       })
 
-      // PER_DAY: check if player already has a fee for any other match on the same day
-      let alreadyChargedForDay = false
-      if (feeProduct?.billingPeriod === 'PER_DAY') {
-        const matchDate = request.match.date
-        const dayStart  = new Date(matchDate)
-        dayStart.setHours(0, 0, 0, 0)
-        const dayEnd = new Date(matchDate)
-        dayEnd.setHours(23, 59, 59, 999)
-
-        const sameDayFee = await prisma.matchFeeAssignment.findFirst({
-          where: {
-            playerId: request.playerId,
-            status: { not: 'WAIVED' },
-            match: { date: { gte: dayStart, lte: dayEnd } },
-          },
-        })
-        if (sameDayFee) alreadyChargedForDay = true
-      }
-
-      if (!alreadyChargedForDay) {
-        await prisma.matchFeeAssignment.create({
-          data: {
-            matchId: request.matchId,
-            playerId: request.playerId,
-            feeProductId: feeProduct?.id ?? null,
-            playerType: 'STARTER',
-            amount: feeProduct?.starterAmount ?? 0,
-            paymentToken: randomBytes(20).toString('hex'),
-            notes: feeProduct?.billingPeriod === 'PER_DAY' ? 'Day rate — charged once per day' : null,
-          },
-        })
-      }
+      await prisma.matchFeeAssignment.create({
+        data: {
+          eventId: request.eventId,
+          playerId: request.playerId,
+          feeProductId: feeProduct?.id ?? null,
+          playerType: 'STARTER',
+          amount: feeProduct?.starterAmount ?? 0,
+          paymentToken: randomBytes(20).toString('hex'),
+        },
+      })
     }
   }
 
-  // If player changed FROM available to unavailable/maybe — remove their fee assignment
-  // only if it hasn't been paid yet (only remove if it's the fee tied to THIS match)
+  // If player changed FROM available — remove their fee assignment if still unpaid
   if (status !== 'AVAILABLE' && previousStatus === 'AVAILABLE') {
     const assignment = await prisma.matchFeeAssignment.findUnique({
-      where: { matchId_playerId: { matchId: request.matchId, playerId: request.playerId } },
+      where: { eventId_playerId: { eventId: request.eventId, playerId: request.playerId } },
     })
     if (assignment && assignment.status === 'PENDING') {
       await prisma.matchFeeAssignment.delete({ where: { id: assignment.id } })

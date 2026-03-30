@@ -7,6 +7,7 @@ import axios from 'axios'
 import toast from 'react-hot-toast'
 
 type Team = { id: string; name: string; type: string; season: number }
+type MatchEvent = { id: string; name: string; matches: { id: string; opposition: string }[] }
 
 export default function NewMatchPage() {
   const router = useRouter()
@@ -14,6 +15,7 @@ export default function NewMatchPage() {
   const [teamsLoading, setTeamsLoading] = useState(true)
   const [creatingTeams, setCreatingTeams] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [existingEvents, setExistingEvents] = useState<MatchEvent[]>([])
   const [form, setForm] = useState({
     teamId: '',
     opposition: '',
@@ -34,6 +36,7 @@ export default function NewMatchPage() {
     topBowler: '',
     topBowlerWickets: '',
     cricheroesUrl: '',
+    eventId: '',   // '' means auto-create a new event
   })
 
   const fetchTeams = () => {
@@ -49,6 +52,21 @@ export default function NewMatchPage() {
   }
 
   useEffect(() => { fetchTeams() }, [])
+
+  // When date or teamId changes, fetch existing events on that day
+  useEffect(() => {
+    if (!form.date || !form.teamId) { setExistingEvents([]); return }
+    axios.get(`/api/events?date=${form.date}&teamId=${form.teamId}`)
+      .then((res) => {
+        setExistingEvents(res.data)
+        // Reset eventId if the previously selected event is no longer valid
+        setForm((f) => {
+          const valid = res.data.some((e: MatchEvent) => e.id === f.eventId)
+          return valid ? f : { ...f, eventId: '' }
+        })
+      })
+      .catch(() => setExistingEvents([]))
+  }, [form.date, form.teamId])
 
   const handleCreateDefaultTeams = async () => {
     setCreatingTeams(true)
@@ -93,6 +111,7 @@ export default function NewMatchPage() {
         topBowler: form.topBowler || null,
         topBowlerWickets: form.topBowlerWickets ? parseInt(form.topBowlerWickets) : null,
         cricheroesUrl: form.cricheroesUrl || null,
+        eventId: form.eventId || null,
       })
       toast.success('Match created!')
       router.push('/admin/matches')
@@ -192,6 +211,29 @@ export default function NewMatchPage() {
             />
           </div>
         </div>
+
+        {/* Festival Day — shown when existing events exist on this date */}
+        {existingEvents.length > 0 && (
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+            <p className="text-sm font-semibold text-blue-800 mb-1">Festival / Double-header day detected</p>
+            <p className="text-xs text-blue-600 mb-3">
+              There {existingEvents.length === 1 ? 'is already a match' : 'are already matches'} on this date. You can group this match into the same event so availability and fees are shared.
+            </p>
+            <label className="label text-blue-700">Add to existing event</label>
+            <select
+              className="input"
+              value={form.eventId}
+              onChange={(e) => set('eventId', e.target.value)}
+            >
+              <option value="">Create a new event (separate availability &amp; fees)</option>
+              {existingEvents.map((ev) => (
+                <option key={ev.id} value={ev.id}>
+                  {ev.name} ({ev.matches.map((m) => m.opposition).join(', ')})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {/* Home/Away + Result */}
         <div className="grid grid-cols-2 gap-4">

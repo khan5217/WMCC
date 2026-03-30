@@ -41,6 +41,7 @@ interface MatchInfo {
   date: string
   venue: string
   team: { name: string }
+  event: { name: string; date: string; venue: string } | null
 }
 
 const CHANNELS = [
@@ -231,10 +232,10 @@ export default function MatchFeePage() {
             <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 mb-6">
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <h1 className="text-xl font-bold text-gray-900">vs {matchInfo.opposition}</h1>
+                  <h1 className="text-xl font-bold text-gray-900">{matchInfo.event?.name ?? `vs ${matchInfo.opposition}`}</h1>
                   <p className="text-sm text-gray-500 mt-0.5">
-                    {new Date(matchInfo.date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                    {' · '}{matchInfo.venue}{' · '}{matchInfo.team.name}
+                    {new Date(matchInfo.event?.date ?? matchInfo.date).toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                    {' · '}{matchInfo.event?.venue ?? matchInfo.venue}{' · '}{matchInfo.team.name}
                   </p>
                 </div>
                 <div className="flex gap-2 flex-wrap">

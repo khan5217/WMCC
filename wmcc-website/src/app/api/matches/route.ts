@@ -18,6 +18,8 @@ const createSchema = z.object({
   description: z.string().nullable().optional(),
   leagueName: z.string().nullable().optional(),
   isFeatured: z.boolean().default(false),
+  // Optional: attach match to an existing MatchEvent (festival day)
+  eventId: z.string().nullable().optional(),
 })
 
 function getAuth(req: NextRequest) {
@@ -38,13 +40,37 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const data = createSchema.parse(body)
 
+    const matchDate = new Date(data.date)
+    const season = matchDate.getFullYear()
+
+    let eventId = data.eventId ?? null
+
+    // If no eventId supplied, auto-create a MatchEvent for this match
+    if (!eventId) {
+      const event = await prisma.matchEvent.create({
+        data: {
+          name: `vs ${data.opposition}`,
+          date: matchDate,
+          venue: data.venue,
+          teamId: data.teamId,
+          season,
+        },
+      })
+      eventId = event.id
+    } else {
+      // Verify the provided event exists
+      const event = await prisma.matchEvent.findUnique({ where: { id: eventId } })
+      if (!event) return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+    }
+
     const match = await prisma.match.create({
       data: {
         teamId: data.teamId,
+        eventId,
         opposition: data.opposition,
         venue: data.venue,
         isHome: data.isHome,
-        date: new Date(data.date),
+        date: matchDate,
         format: data.format,
         result: data.result ?? null,
         wmccScore: data.wmccScore ?? null,

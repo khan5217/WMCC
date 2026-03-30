@@ -23,7 +23,7 @@ export default async function AvailabilityRespondPage({ searchParams }: Props) {
   const request = await prisma.availabilityRequest.findUnique({
     where: { token },
     include: {
-      match: true,
+      event: true,
       player: { include: { user: { select: { firstName: true } } } },
     },
   })
@@ -32,12 +32,12 @@ export default async function AvailabilityRespondPage({ searchParams }: Props) {
     return <Message title="Link not found" body="This availability link is invalid or has expired." />
   }
 
-  const expired = request.match.date < new Date()
+  const expired = request.event.date < new Date()
   if (expired) {
-    return <Message title="Match has passed" body={`The deadline for WMCC vs ${request.match.opposition} has passed.`} />
+    return <Message title="Event has passed" body={`The deadline for ${request.event.name} has passed.`} />
   }
 
-  const matchDate = format(request.match.date, 'EEEE d MMMM yyyy')
+  const eventDate = format(request.event.date, 'EEEE d MMMM yyyy')
   const currentStatus = (confirmed ? status : request.status) as keyof typeof STATUS_COPY
   const copy = STATUS_COPY[currentStatus] ?? STATUS_COPY.AVAILABLE
 
@@ -55,12 +55,12 @@ export default async function AvailabilityRespondPage({ searchParams }: Props) {
           <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">WMCC Milton Keynes</p>
         </div>
 
-        {/* Match info */}
+        {/* Event info */}
         <div className="bg-gray-50 rounded-xl p-4 mb-6 text-center">
           <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">Match</p>
-          <p className="font-bold text-gray-900 text-lg">WMCC vs {request.match.opposition}</p>
-          <p className="text-gray-500 text-sm mt-1">{matchDate}</p>
-          <p className="text-gray-400 text-sm">{request.match.venue}</p>
+          <p className="font-bold text-gray-900 text-lg">WMCC {request.event.name}</p>
+          <p className="text-gray-500 text-sm mt-1">{eventDate}</p>
+          <p className="text-gray-400 text-sm">{request.event.venue}</p>
         </div>
 
         {/* Current status */}
