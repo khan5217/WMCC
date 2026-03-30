@@ -24,13 +24,28 @@ export async function POST(req: NextRequest) {
             if (found) teamId = found.id
           }
 
+          const matchDate = new Date(row.date ?? Date.now())
+          const opposition = row.opposition ?? 'Unknown'
+          const venue = row.venue ?? 'TBC'
+
+          const event = await prisma.matchEvent.create({
+            data: {
+              name: `vs ${opposition}`,
+              date: matchDate,
+              venue,
+              teamId,
+              season: matchDate.getFullYear(),
+            },
+          })
+
           await prisma.match.create({
             data: {
               teamId,
-              opposition: row.opposition ?? 'Unknown',
-              venue: row.venue ?? 'TBC',
+              eventId: event.id,
+              opposition,
+              venue,
               isHome: String(row.is_home ?? 'true').toLowerCase() !== 'false',
-              date: new Date(row.date ?? Date.now()),
+              date: matchDate,
               format: row.format ?? 'ONE_DAY',
               result: row.result || null,
               wmccScore: row.wmcc_score || null,
