@@ -77,7 +77,7 @@ const structuredData = {
   },
   email: 'contact@wmccmk.com',
   sameAs: [
-    'https://www.facebook.com/wmccmk',
+    'https://www.facebook.com/share/1FMfkKUnLn/?mibextid=wwXIfr',
     'https://x.com/wmccmk',
     'https://www.instagram.com/wmccmk',
     'https://www.youtube.com/@wmccmk',

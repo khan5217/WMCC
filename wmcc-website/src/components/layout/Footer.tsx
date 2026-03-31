@@ -39,7 +39,7 @@ export function Footer() {
               nurturing talent and celebrating the sport in Milton Keynes.
             </p>
             <div className="flex gap-2 mt-5">
-              <a href="https://www.facebook.com/wmccmk" target="_blank" rel="noopener noreferrer" className="w-11 h-11 bg-gray-800 hover:bg-cricket-green rounded-full flex items-center justify-center transition-colors" aria-label="Facebook">
+              <a href="https://www.facebook.com/share/1FMfkKUnLn/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" className="w-11 h-11 bg-gray-800 hover:bg-cricket-green rounded-full flex items-center justify-center transition-colors" aria-label="Facebook">
                 <Facebook className="h-4 w-4" />
               </a>
               <a href="https://x.com/wmccmk" target="_blank" rel="noopener noreferrer" className="w-11 h-11 bg-gray-800 hover:bg-cricket-green rounded-full flex items-center justify-center transition-colors" aria-label="X (Twitter)">
