@@ -21,7 +21,7 @@ export async function GET(req: NextRequest, { params }: Ctx) {
       include: {
         player: {
           include: {
-            user: { select: { firstName: true, lastName: true, avatarUrl: true } },
+            user: { select: { firstName: true, lastName: true, avatarUrl: true, membershipStatus: true } },
             matchFeeAssignments: {
               where: { eventId: match.eventId },
               select: { id: true, status: true, amount: true, playerType: true, eventId: true },
