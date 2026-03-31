@@ -8,7 +8,82 @@ import { format } from 'date-fns'
 
 interface Ctx { params: { id: string } }
 
-// POST — admin sends availability requests to all active players for this match's event
+const SQUAD_SIZE = 11
+
+function isPaidMember(membershipStatus: string) {
+  return membershipStatus === 'ACTIVE'
+}
+
+async function sendToPlayers(
+  players: Array<{
+    id: string
+    contactPhone: string | null
+    user: { email: string; phone: string | null; firstName: string; lastName: string }
+  }>,
+  eventId: string,
+  matchDate: string,
+  eventDesc: string,
+  venue: string,
+) {
+  let emailsSent = 0
+  let smsSent = 0
+  let created = 0
+
+  for (const player of players) {
+    const existing = await prisma.availabilityRequest.findUnique({
+      where: { eventId_playerId: { eventId, playerId: player.id } },
+    })
+
+    let token: string
+    if (existing) {
+      token = existing.token
+    } else {
+      token = crypto.randomBytes(32).toString('hex')
+      await prisma.availabilityRequest.create({
+        data: { eventId, playerId: player.id, token },
+      })
+      created++
+    }
+
+    const emailOk = await sendAvailabilityRequest({
+      to: player.user.email,
+      firstName: player.user.firstName,
+      matchDate,
+      opposition: eventDesc,
+      venue,
+      token,
+    })
+    if (emailOk) {
+      emailsSent++
+      await prisma.availabilityRequest.update({
+        where: { token },
+        data: { emailSentAt: new Date() },
+      })
+    }
+
+    const phone = player.user.phone ?? player.contactPhone
+    if (phone) {
+      const smsOk = await sendAvailabilitySMS({
+        phone,
+        firstName: player.user.firstName,
+        matchDate,
+        opposition: eventDesc,
+        token,
+      })
+      if (smsOk.success) {
+        smsSent++
+        await prisma.availabilityRequest.update({
+          where: { token },
+          data: { smsSentAt: new Date() },
+        })
+      }
+    }
+  }
+
+  return { created, emailsSent, smsSent }
+}
+
+// POST — Phase 1: send availability requests to paid members only
 export async function POST(req: NextRequest, { params }: Ctx) {
   return withAuth(req, async (ctx) => {
     if (ctx.role !== 'ADMIN' && ctx.role !== 'COMMITTEE') {
@@ -20,78 +95,63 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       include: { team: true, event: true },
     })
     if (!match) return NextResponse.json({ error: 'Match not found' }, { status: 404 })
-
     if (match.event.date < new Date()) {
       return NextResponse.json({ error: 'Cannot send availability for a past event' }, { status: 400 })
     }
 
-    // Get all active players with user contact info
-    const players = await prisma.player.findMany({
-      where: { isActive: true },
-      include: { user: { select: { email: true, phone: true, firstName: true, lastName: true } } },
+    const members = await prisma.player.findMany({
+      where: { isActive: true, user: { membershipStatus: 'ACTIVE' } },
+      include: { user: { select: { email: true, phone: true, firstName: true, lastName: true, membershipStatus: true } } },
     })
 
     const matchDate = format(match.event.date, 'EEEE d MMMM yyyy')
-    const eventDesc = match.event.name
+    const result = await sendToPlayers(members, match.eventId, matchDate, match.event.name, match.event.venue)
 
-    let emailsSent = 0
-    let smsSent = 0
-    let created = 0
+    return NextResponse.json({ ...result, total: members.length })
+  })
+}
 
-    for (const player of players) {
-      // Upsert — if already exists keep existing token so links still work
-      const existing = await prisma.availabilityRequest.findUnique({
-        where: { eventId_playerId: { eventId: match.eventId, playerId: player.id } },
-      })
-
-      let token: string
-      if (existing) {
-        token = existing.token
-      } else {
-        token = crypto.randomBytes(32).toString('hex')
-        await prisma.availabilityRequest.create({
-          data: { eventId: match.eventId, playerId: player.id, token },
-        })
-        created++
-      }
-
-      const emailOk = await sendAvailabilityRequest({
-        to: player.user.email,
-        firstName: player.user.firstName,
-        matchDate,
-        opposition: eventDesc,
-        venue: match.event.venue,
-        token,
-      })
-      if (emailOk) {
-        emailsSent++
-        await prisma.availabilityRequest.update({
-          where: { token },
-          data: { emailSentAt: new Date() },
-        })
-      }
-
-      // SMS to player's phone (user phone or contactPhone for guest players)
-      const phone = player.user.phone ?? player.contactPhone
-      if (phone) {
-        const smsOk = await sendAvailabilitySMS({
-          phone,
-          firstName: player.user.firstName,
-          matchDate,
-          opposition: eventDesc,
-          token,
-        })
-        if (smsOk.success) {
-          smsSent++
-          await prisma.availabilityRequest.update({
-            where: { token },
-            data: { smsSentAt: new Date() },
-          })
-        }
-      }
+// PUT — Phase 2: send availability requests to non-members (only when members < SQUAD_SIZE)
+export async function PUT(req: NextRequest, { params }: Ctx) {
+  return withAuth(req, async (ctx) => {
+    if (ctx.role !== 'ADMIN' && ctx.role !== 'COMMITTEE') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    return NextResponse.json({ created, emailsSent, smsSent, total: players.length })
+    const match = await prisma.match.findUnique({
+      where: { id: params.id },
+      include: { event: true },
+    })
+    if (!match) return NextResponse.json({ error: 'Match not found' }, { status: 404 })
+    if (match.event.date < new Date()) {
+      return NextResponse.json({ error: 'Cannot send availability for a past event' }, { status: 400 })
+    }
+
+    // Count confirmed (AVAILABLE) paid members for this event
+    const availableMembers = await prisma.availabilityRequest.count({
+      where: {
+        eventId: match.eventId,
+        status: 'AVAILABLE',
+        player: { user: { membershipStatus: 'ACTIVE' } },
+      },
+    })
+
+    if (availableMembers >= SQUAD_SIZE) {
+      return NextResponse.json(
+        { error: `Already have ${availableMembers} members available — non-members not needed` },
+        { status: 409 },
+      )
+    }
+
+    const nonMembers = await prisma.player.findMany({
+      where: { isActive: true, user: { membershipStatus: { not: 'ACTIVE' } } },
+      include: { user: { select: { email: true, phone: true, firstName: true, lastName: true, membershipStatus: true } } },
+    })
+
+    const matchDate = format(match.event.date, 'EEEE d MMMM yyyy')
+    const result = await sendToPlayers(nonMembers, match.eventId, matchDate, match.event.name, match.event.venue)
+
+    return NextResponse.json({ ...result, total: nonMembers.length, availableMembers })
   })
 }
 
@@ -148,7 +208,6 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
         }
       }
 
-      // Fall back to SMS only when there is no email (or email send failed)
       if (!phone) continue
       const smsOk = await sendAvailabilitySMS({
         phone,

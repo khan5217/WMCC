@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import axios from 'axios'
 import toast from 'react-hot-toast'
-import { ArrowLeft, Send, Bell, CheckCircle, XCircle, HelpCircle, Clock, PoundSterling, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Send, Bell, CheckCircle, XCircle, HelpCircle, Clock, PoundSterling, ExternalLink, UserCheck, UserX } from 'lucide-react'
 
 type FeeAssignment = {
   id: string
@@ -16,7 +16,7 @@ type FeeAssignment = {
 }
 
 type Player = {
-  user: { firstName: string; lastName: string }
+  user: { firstName: string; lastName: string; membershipStatus: string }
   matchFeeAssignments: FeeAssignment[]
 }
 
@@ -53,17 +53,133 @@ const FEE_STATUS_BADGE: Record<string, string> = {
   WAIVED:      'bg-gray-100 text-gray-500',
 }
 
+const SQUAD_SIZE = 11
+
 function fmt(pence: number) {
   return `£${(pence / 100).toFixed(2)}`
 }
 
+function PlayerCard({ r, matchId }: { r: AvailabilityRequest; matchId: string }) {
+  const cfg = STATUS_CONFIG[r.status]
+  const fee = r.player.matchFeeAssignments[0] ?? null
+  return (
+    <div className={`rounded-lg border px-4 py-3 ${cfg.bg} ${cfg.border}`}>
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <span className="font-medium text-gray-900 text-sm">
+          {r.player.user.firstName} {r.player.user.lastName}
+        </span>
+        <div className="flex items-center gap-3 flex-wrap">
+          {fee ? (
+            <Link
+              href={`/admin/match-fees/${matchId}`}
+              className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${FEE_STATUS_BADGE[fee.status]}`}
+            >
+              <PoundSterling className="h-3 w-3" />
+              {fmt(fee.amount)} · {fee.status}
+              <ExternalLink className="h-3 w-3 ml-0.5" />
+            </Link>
+          ) : r.status === 'AVAILABLE' ? (
+            <Link
+              href={`/admin/match-fees/${matchId}`}
+              className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500"
+            >
+              <PoundSterling className="h-3 w-3" /> No fee — assign manually
+            </Link>
+          ) : null}
+          <div className="flex items-center gap-2 text-xs text-gray-400">
+            {r.emailSentAt && <span>Email ✓</span>}
+            {r.smsSentAt && <span>SMS ✓</span>}
+            {(r.emailReminderSentAt || r.smsReminderSentAt) && <span>Reminder ✓</span>}
+            {r.respondedAt && (
+              <span className="text-gray-500">
+                {new Date(r.respondedAt).toLocaleDateString('en-GB', {
+                  day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+                })}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PlayerGroup({
+  status,
+  items,
+  matchId,
+}: {
+  status: keyof typeof STATUS_CONFIG
+  items: AvailabilityRequest[]
+  matchId: string
+}) {
+  if (items.length === 0) return null
+  const cfg = STATUS_CONFIG[status]
+  const Icon = cfg.icon
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-2">
+        <Icon className={`h-4 w-4 ${cfg.colour}`} />
+        <span className={`text-sm font-semibold ${cfg.colour}`}>{cfg.label} ({items.length})</span>
+      </div>
+      <div className="space-y-2">
+        {items.map(r => <PlayerCard key={r.id} r={r} matchId={matchId} />)}
+      </div>
+    </div>
+  )
+}
+
+function PlayerSection({
+  title,
+  icon: Icon,
+  iconClass,
+  requests,
+  matchId,
+  emptyMessage,
+}: {
+  title: string
+  icon: React.ElementType
+  iconClass: string
+  requests: AvailabilityRequest[]
+  matchId: string
+  emptyMessage: string
+}) {
+  const grouped = {
+    AVAILABLE:   requests.filter(r => r.status === 'AVAILABLE'),
+    MAYBE:       requests.filter(r => r.status === 'MAYBE'),
+    PENDING:     requests.filter(r => r.status === 'PENDING'),
+    UNAVAILABLE: requests.filter(r => r.status === 'UNAVAILABLE'),
+  }
+
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-4">
+      <div className="flex items-center gap-2 mb-4">
+        <Icon className={`h-5 w-5 ${iconClass}`} />
+        <h2 className="font-semibold text-gray-800">{title}</h2>
+        <span className="ml-auto text-xs text-gray-400">{requests.length} player{requests.length !== 1 ? 's' : ''}</span>
+      </div>
+      {requests.length === 0 ? (
+        <p className="text-sm text-gray-400 text-center py-4">{emptyMessage}</p>
+      ) : (
+        <div className="space-y-5">
+          {(Object.entries(grouped) as [keyof typeof grouped, AvailabilityRequest[]][])
+            .map(([status, items]) => (
+              <PlayerGroup key={status} status={status} items={items} matchId={matchId} />
+            ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function AvailabilityPage() {
   const { id } = useParams<{ id: string }>()
-  const [requests, setRequests]   = useState<AvailabilityRequest[]>([])
-  const [summary, setSummary]     = useState<Summary | null>(null)
-  const [loading, setLoading]     = useState(true)
-  const [sending, setSending]     = useState(false)
-  const [reminding, setReminding] = useState(false)
+  const [requests, setRequests]     = useState<AvailabilityRequest[]>([])
+  const [summary, setSummary]       = useState<Summary | null>(null)
+  const [loading, setLoading]       = useState(true)
+  const [sending, setSending]       = useState(false)
+  const [reminding, setReminding]   = useState(false)
+  const [inviting, setInviting]     = useState(false)
 
   const load = async () => {
     try {
@@ -83,7 +199,7 @@ export default function AvailabilityPage() {
     setSending(true)
     try {
       const { data } = await axios.post(`/api/matches/${id}/availability-request`)
-      toast.success(`Sent — ${data.emailsSent} emails, ${data.smsSent} SMS`)
+      toast.success(`Sent to members — ${data.emailsSent} emails, ${data.smsSent} SMS`)
       load()
     } catch (err: any) {
       toast.error(err.response?.data?.error ?? 'Failed to send')
@@ -105,12 +221,24 @@ export default function AvailabilityPage() {
     }
   }
 
-  const grouped = {
-    AVAILABLE:   requests.filter(r => r.status === 'AVAILABLE'),
-    MAYBE:       requests.filter(r => r.status === 'MAYBE'),
-    PENDING:     requests.filter(r => r.status === 'PENDING'),
-    UNAVAILABLE: requests.filter(r => r.status === 'UNAVAILABLE'),
+  const inviteNonMembers = async () => {
+    setInviting(true)
+    try {
+      const { data } = await axios.put(`/api/matches/${id}/availability-request`)
+      toast.success(`Non-members invited — ${data.emailsSent} emails, ${data.smsSent} SMS`)
+      load()
+    } catch (err: any) {
+      toast.error(err.response?.data?.error ?? 'Failed to invite non-members')
+    } finally {
+      setInviting(false)
+    }
   }
+
+  const members    = requests.filter(r => r.player.user.membershipStatus === 'ACTIVE')
+  const nonMembers = requests.filter(r => r.player.user.membershipStatus !== 'ACTIVE')
+  const availableMembers = members.filter(r => r.status === 'AVAILABLE').length
+  const nonMembersInvited = nonMembers.length > 0
+  const needsNonMembers = availableMembers < SQUAD_SIZE
 
   return (
     <div className="p-4 sm:p-6 max-w-3xl mx-auto">
@@ -156,8 +284,9 @@ export default function AvailabilityPage() {
           className="flex items-center gap-2 bg-cricket-green text-white px-4 py-2.5 rounded-lg font-semibold text-sm hover:bg-cricket-dark disabled:opacity-50"
         >
           <Send className="h-4 w-4" />
-          {sending ? 'Sending…' : summary && summary.total > 0 ? 'Resend All' : 'Send Availability Request'}
+          {sending ? 'Sending…' : members.length > 0 ? 'Resend to Members' : 'Send to Members'}
         </button>
+
         {summary && summary.pending > 0 && (
           <button
             onClick={sendReminders}
@@ -168,81 +297,46 @@ export default function AvailabilityPage() {
             {reminding ? 'Sending…' : `Remind ${summary.pending} non-responders`}
           </button>
         )}
+
+        {needsNonMembers && (
+          <button
+            onClick={inviteNonMembers}
+            disabled={inviting}
+            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2.5 rounded-lg font-semibold text-sm hover:bg-blue-700 disabled:opacity-50"
+          >
+            <UserX className="h-4 w-4" />
+            {inviting
+              ? 'Inviting…'
+              : nonMembersInvited
+              ? 'Resend to Non-members'
+              : `Invite Non-members (${availableMembers}/${SQUAD_SIZE} members confirmed)`}
+          </button>
+        )}
       </div>
 
-      {/* Player list grouped by status */}
+      {/* Player lists */}
       {loading ? (
         <p className="text-gray-500 text-sm">Loading…</p>
-      ) : requests.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">
-          <p className="text-lg font-medium">No requests sent yet</p>
-          <p className="text-sm mt-1">Click "Send Availability Request" to notify all players.</p>
-        </div>
       ) : (
-        <div className="space-y-5">
-          {(Object.entries(grouped) as [keyof typeof grouped, AvailabilityRequest[]][])
-            .filter(([, items]) => items.length > 0)
-            .map(([status, items]) => {
-              const cfg = STATUS_CONFIG[status]
-              const Icon = cfg.icon
-              return (
-                <div key={status}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Icon className={`h-4 w-4 ${cfg.colour}`} />
-                    <span className={`text-sm font-semibold ${cfg.colour}`}>{cfg.label} ({items.length})</span>
-                  </div>
-                  <div className="space-y-2">
-                    {items.map((r) => {
-                      const fee = r.player.matchFeeAssignments[0] ?? null
-                      return (
-                        <div key={r.id} className={`rounded-lg border px-4 py-3 ${cfg.bg} ${cfg.border}`}>
-                          <div className="flex items-center justify-between gap-3 flex-wrap">
-                            <span className="font-medium text-gray-900 text-sm">
-                              {r.player.user.firstName} {r.player.user.lastName}
-                            </span>
-
-                            <div className="flex items-center gap-3 flex-wrap">
-                              {/* Fee badge */}
-                              {fee ? (
-                                <Link
-                                  href={`/admin/match-fees/${id}`}
-                                  className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${FEE_STATUS_BADGE[fee.status]}`}
-                                >
-                                  <PoundSterling className="h-3 w-3" />
-                                  {fmt(fee.amount)} · {fee.status}
-                                  <ExternalLink className="h-3 w-3 ml-0.5" />
-                                </Link>
-                              ) : status === 'AVAILABLE' ? (
-                                <Link
-                                  href={`/admin/match-fees/${id}`}
-                                  className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-500"
-                                >
-                                  <PoundSterling className="h-3 w-3" /> No fee — assign manually
-                                </Link>
-                              ) : null}
-
-                              {/* Sent indicators */}
-                              <div className="flex items-center gap-2 text-xs text-gray-400">
-                                {r.emailSentAt && <span>Email ✓</span>}
-                                {r.smsSentAt && <span>SMS ✓</span>}
-                                {(r.emailReminderSentAt || r.smsReminderSentAt) && <span>Reminder ✓</span>}
-                                {r.respondedAt && (
-                                  <span className="text-gray-500">
-                                    {new Date(r.respondedAt).toLocaleDateString('en-GB', {
-                                      day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-                                    })}
-                                  </span>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )
-            })}
+        <div className="space-y-6">
+          <PlayerSection
+            title="Club Members (paid)"
+            icon={UserCheck}
+            iconClass="text-green-600"
+            requests={members}
+            matchId={id}
+            emptyMessage="No availability requests sent to members yet."
+          />
+          {nonMembersInvited && (
+            <PlayerSection
+              title="Non-members / Guests"
+              icon={UserX}
+              iconClass="text-blue-500"
+              requests={nonMembers}
+              matchId={id}
+              emptyMessage="No non-members invited yet."
+            />
+          )}
         </div>
       )}
     </div>
