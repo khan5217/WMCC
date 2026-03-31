@@ -95,7 +95,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
   })
 }
 
-// PATCH — send SMS reminder to players who haven't responded
+// PATCH — send reminders to players who haven't responded (email preferred, SMS fallback)
 export async function PATCH(req: NextRequest, { params }: Ctx) {
   return withAuth(req, async (ctx) => {
     if (ctx.role !== 'ADMIN' && ctx.role !== 'COMMITTEE') {
@@ -115,18 +115,42 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
       where: { eventId: match.eventId, status: 'PENDING' },
       include: {
         player: {
-          include: { user: { select: { firstName: true, phone: true } } },
+          include: { user: { select: { firstName: true, email: true, phone: true } } },
         },
       },
     })
 
     const matchDate = format(match.event.date, 'EEEE d MMMM yyyy')
+    let emailsSent = 0
     let smsSent = 0
 
     for (const r of pending) {
+      const email = r.player.user.email
       const phone = r.player.user.phone ?? r.player.contactPhone
+
+      // Prefer email — only fall back to SMS if no email address
+      if (email) {
+        const emailOk = await sendAvailabilityRequest({
+          to: email,
+          firstName: r.player.user.firstName,
+          matchDate,
+          opposition: match.event.name,
+          venue: match.event.venue,
+          token: r.token,
+        })
+        if (emailOk) {
+          emailsSent++
+          await prisma.availabilityRequest.update({
+            where: { id: r.id },
+            data: { emailReminderSentAt: new Date() },
+          })
+          continue
+        }
+      }
+
+      // Fall back to SMS only when there is no email (or email send failed)
       if (!phone) continue
-      const ok = await sendAvailabilitySMS({
+      const smsOk = await sendAvailabilitySMS({
         phone,
         firstName: r.player.user.firstName,
         matchDate,
@@ -134,7 +158,7 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
         token: r.token,
         isReminder: true,
       })
-      if (ok.success) {
+      if (smsOk.success) {
         smsSent++
         await prisma.availabilityRequest.update({
           where: { id: r.id },
@@ -143,6 +167,6 @@ export async function PATCH(req: NextRequest, { params }: Ctx) {
       }
     }
 
-    return NextResponse.json({ smsSent, pendingCount: pending.length })
+    return NextResponse.json({ emailsSent, smsSent, pendingCount: pending.length })
   })
 }

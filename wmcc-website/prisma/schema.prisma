@@ -608,9 +608,10 @@ model AvailabilityRequest {
   token             String             @unique
   status            AvailabilityStatus @default(PENDING)
   note              String?
-  emailSentAt       DateTime?
-  smsSentAt         DateTime?
-  smsReminderSentAt DateTime?
+  emailSentAt          DateTime?
+  smsSentAt            DateTime?
+  emailReminderSentAt  DateTime?
+  smsReminderSentAt    DateTime?
   respondedAt       DateTime?
   createdAt         DateTime           @default(now())
 
