@@ -26,6 +26,7 @@ type AvailabilityRequest = {
   respondedAt: string | null
   emailSentAt: string | null
   smsSentAt: string | null
+  emailReminderSentAt: string | null
   smsReminderSentAt: string | null
   player: Player
 }
@@ -95,7 +96,7 @@ export default function AvailabilityPage() {
     setReminding(true)
     try {
       const { data } = await axios.patch(`/api/matches/${id}/availability-request`)
-      toast.success(`Reminder sent to ${data.smsSent} players`)
+      toast.success(`Reminders sent — ${data.emailsSent} emails, ${data.smsSent} SMS`)
       load()
     } catch (err: any) {
       toast.error(err.response?.data?.error ?? 'Failed to send reminders')
@@ -224,7 +225,7 @@ export default function AvailabilityPage() {
                               <div className="flex items-center gap-2 text-xs text-gray-400">
                                 {r.emailSentAt && <span>Email ✓</span>}
                                 {r.smsSentAt && <span>SMS ✓</span>}
-                                {r.smsReminderSentAt && <span>Reminder ✓</span>}
+                                {(r.emailReminderSentAt || r.smsReminderSentAt) && <span>Reminder ✓</span>}
                                 {r.respondedAt && (
                                   <span className="text-gray-500">
                                     {new Date(r.respondedAt).toLocaleDateString('en-GB', {
