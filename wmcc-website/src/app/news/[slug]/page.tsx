@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { formatDatetime } from '@/lib/utils'
 import { ArrowLeft } from 'lucide-react'
 import type { Metadata } from 'next'
-import DOMPurify from 'isomorphic-dompurify'
+import sanitizeHtml from 'sanitize-html'
 
 interface Props {
   params: { slug: string }
@@ -79,7 +79,15 @@ export default async function ArticlePage({ params }: Props) {
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
           <div
             className="prose prose-lg max-w-none prose-headings:font-serif prose-headings:text-gray-900 prose-a:text-cricket-green"
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(article.content) }}
+            dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.content, {
+              allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'figure', 'figcaption', 'iframe']),
+              allowedAttributes: {
+                ...sanitizeHtml.defaults.allowedAttributes,
+                img: ['src', 'alt', 'width', 'height', 'loading', 'decoding', 'class'],
+                iframe: ['src', 'width', 'height', 'allowfullscreen', 'frameborder'],
+                '*': ['class'],
+              },
+            }) }}
           />
         </div>
       </div>
