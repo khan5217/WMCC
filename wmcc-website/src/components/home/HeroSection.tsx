@@ -61,7 +61,7 @@ export function HeroSection({ upcomingMatch }: { upcomingMatch?: Match }) {
             <br />
             <span className="text-cricket-gold">WMCC</span>
             <br />
-            Cricket Club
+            Milton Keynes
           </motion.h1>
 
           <motion.p
